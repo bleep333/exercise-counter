@@ -1,17 +1,24 @@
-# Python virtual environment
-venv/
-.env/
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
 
-# OS files
+# Session data
+sessions/
+*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
 Thumbs.db
-
-# VS Code (optional)
-.vscode/
-
-# Logs
-*.log

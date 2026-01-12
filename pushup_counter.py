@@ -3,6 +3,9 @@ import numpy as np
 import mediapipe as mp
 from collections import deque
 import time
+import json
+import os
+from datetime import datetime
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
@@ -25,10 +28,40 @@ def get_point(landmarks, idx):
     lm = landmarks[idx]
     return (lm.x, lm.y)
 
+def save_session(count, start_time, end_time, rep_times):
+    """Save session data to JSON file for future analytics."""
+    session_data = {
+        "date": datetime.now().isoformat(),
+        "pushup_count": count,
+        "start_time": start_time,
+        "end_time": end_time,
+        "duration_seconds": end_time - start_time,
+        "rep_times": rep_times
+    }
+    
+    # Create sessions directory if it doesn't exist
+    os.makedirs("sessions", exist_ok=True)
+    
+    # Save to file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"sessions/session_{timestamp}.json"
+    with open(filename, 'w') as f:
+        json.dump(session_data, f, indent=2)
+    
+    return filename
+
 def main():
+    print("Initializing pushup counter...")
+    print("Controls: 'q' to quit, 'r' to reset counter")
+    
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        raise RuntimeError("Could not open webcam.")
+        print("Error: Could not open webcam. Please check your camera connection.")
+        return
+
+    # Set camera properties for better performance
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
     # Thresholds (tune per person/camera)
     DOWN_ANGLE = 90     # when below -> "down"
@@ -43,6 +76,10 @@ def main():
     count = 0
     last_rep_time = 0.0
     MIN_REP_GAP = 0.4   # seconds, avoids double counts on jitter
+    
+    # Session tracking
+    session_start_time = time.time()
+    rep_times = []  # Store timestamps of each rep for analytics
 
     # Choose which arm to use (will auto pick the more visible one each frame)
     left_idxs = (mp_pose.PoseLandmark.LEFT_SHOULDER,
@@ -113,6 +150,7 @@ def main():
                         if smooth_angle > UP_ANGLE and (now - last_rep_time) > MIN_REP_GAP:
                             count += 1
                             last_rep_time = now
+                            rep_times.append(now)
                             state = "UP"
 
                     # Draw landmarks
@@ -126,16 +164,30 @@ def main():
                                 (ex + 10, ey - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-            # UI overlay
-            cv2.rectangle(frame, (10, 10), (280, 110), (0, 0, 0), -1)
-            cv2.putText(frame, f"Pushups: {count}", (20, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
-            cv2.putText(frame, f"State: {state}", (20, 90),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+            # Calculate session duration
+            session_duration = time.time() - session_start_time
+            minutes = int(session_duration // 60)
+            seconds = int(session_duration % 60)
+            
+            # UI overlay with semi-transparent background
+            overlay = frame.copy()
+            cv2.rectangle(overlay, (10, 10), (320, 140), (0, 0, 0), -1)
+            cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
+            
+            # Display information
+            cv2.putText(frame, f"Pushups: {count}", (20, 45),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+            cv2.putText(frame, f"State: {state}", (20, 75),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            cv2.putText(frame, f"Time: {minutes:02d}:{seconds:02d}", (20, 105),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 2)
 
             if used_side:
-                cv2.putText(frame, f"Arm: {used_side}", (300, 50),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+                cv2.putText(frame, f"Arm: {used_side}", (20, 130),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (150, 150, 255), 2)
+            else:
+                cv2.putText(frame, "Position yourself in view", (20, 130),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
 
             cv2.imshow("Pushup Counter (Side View)", frame)
             key = cv2.waitKey(1) & 0xFF
@@ -145,9 +197,23 @@ def main():
                 count = 0
                 state = "UP"
                 window.clear()
+                rep_times.clear()
+                session_start_time = time.time()
+                print("Counter reset!")
 
+    # Cleanup and save session
+    session_end_time = time.time()
     cap.release()
     cv2.destroyAllWindows()
+    
+    # Save session data
+    if count > 0:
+        filename = save_session(count, session_start_time, session_end_time, rep_times)
+        print(f"\nSession completed!")
+        print(f"Total pushups: {count}")
+        print(f"Session saved to: {filename}")
+    else:
+        print("\nSession ended with no pushups recorded.")
 
 if __name__ == "__main__":
     main()
