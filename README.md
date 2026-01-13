@@ -1,6 +1,6 @@
 # Pushup Counter
 
-A real-time pushup counter using MediaPipe pose estimation and OpenCV for computer vision. This application uses your webcam to track your body posture and count pushups automatically.
+A real-time pushup counter using MediaPipe pose estimation. Available as both a Python desktop application and a Next.js web application.
 
 ## Features
 
@@ -8,36 +8,58 @@ A real-time pushup counter using MediaPipe pose estimation and OpenCV for comput
 - **Automatic pushup counting** based on arm angle detection
 - **Visual feedback** with pose landmarks and angle display
 - **Smooth counting** with state machine to prevent false positives
-- **Mirror mode** for natural selfie view
-- **Session tracking** - automatically saves workout sessions to JSON files
-- **Interactive controls** (reset counter, quit)
+- **Session tracking** - automatically saves workout sessions
+- **Web application** - run in your browser with `npm run dev`
+- **Desktop application** - run locally with Python
 
-## Requirements
+## Web Application (Next.js)
+
+### Quick Start
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Run the development server:
+```bash
+npm run dev
+```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+4. Click "Start Counting Pushups" and allow camera access when prompted
+
+### Web App Features
+
+- Beautiful landing page with feature overview
+- Real-time camera feed with pose detection overlay
+- Live pushup counter with state tracking
+- Session timer
+- Reset functionality
+- Responsive design for mobile and desktop
+
+## Python Desktop Application
+
+### Requirements
 
 - Python 3.7+
 - Webcam/camera
 - Required packages (see `requirements.txt`)
 
-## Installation
+### Installation
 
-1. Clone or download this repository
-2. Install the required dependencies:
+1. Install the required dependencies:
 
 ```bash
-pip install -r requirements.txt --no-deps
+pip install -r requirements.txt
 ```
 
-## Usage
-
-1. Run the pushup counter:
+2. Run the pushup counter:
 
 ```bash
 python pushup_counter.py
 ```
-
-2. Position yourself so your side profile is visible to the camera (side view works best)
-3. Start doing pushups!
-4. The counter will automatically detect and count your pushups
 
 ### Controls
 
@@ -54,7 +76,7 @@ The application uses MediaPipe's pose estimation to detect key body landmarks (s
 
 The counter uses smoothing and timing constraints to prevent false counts from jittery movements.
 
-### Session Tracking
+### Session Tracking (Python Version)
 
 Each workout session is automatically saved to the `sessions/` directory as a JSON file. The session data includes:
 - Total pushup count
@@ -74,18 +96,42 @@ This data can be used for analytics and progress tracking in future web applicat
 
 ## Future Enhancements
 
-This application is designed to be extended into a web application with:
 - User accounts and authentication
 - Session history and analytics (daily/weekly averages)
 - Goal setting and progress tracking
 - Multiple exercise types
 - Cloud storage for workout data
+- Web-based analytics dashboard
 
 ## Troubleshooting
+
+### Web Application
+
+- **Camera not opening**: Make sure to allow camera access in your browser settings
+- **MediaPipe not loading**: Check your internet connection (MediaPipe loads from CDN)
+- **Not detecting pushups**: Adjust lighting, check camera angle, ensure side profile is visible
+
+### Python Application
 
 - **Camera not opening**: Make sure no other application is using your webcam
 - **Not detecting pushups**: Adjust lighting, check camera angle, ensure side profile is visible
 - **False counts**: You may need to adjust the `DOWN_ANGLE` and `UP_ANGLE` thresholds in the code based on your form
+
+## Project Structure
+
+```
+pushup-counter/
+├── app/                    # Next.js app directory
+│   ├── page.tsx           # Landing page
+│   ├── counter/           # Counter page
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   └── PoseCounter.tsx    # Main counter component
+├── pushup_counter.py      # Python desktop version
+├── requirements.txt       # Python dependencies
+├── package.json          # Node.js dependencies
+└── README.md             # This file
+```
 
 ## License
 
