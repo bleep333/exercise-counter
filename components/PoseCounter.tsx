@@ -52,6 +52,7 @@ export function PoseCounter() {
   const [repTimes, setRepTimes] = useState<RepTime[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [showInstructions, setShowInstructions] = useState(false)
 
   // Angle calculation and state tracking
   const angleWindowRef = useRef<number[]>([])
@@ -486,17 +487,25 @@ export function PoseCounter() {
         <button onClick={resetCounter} className={styles.resetButton}>
           Reset Counter
         </button>
+        <button 
+          onClick={() => setShowInstructions(!showInstructions)} 
+          className={styles.instructionsToggle}
+        >
+          {showInstructions ? 'Hide' : 'Show'} Instructions
+        </button>
       </div>
 
-      <div className={styles.instructions}>
-        <h3>Instructions:</h3>
-        <ul>
-          <li>Position yourself so your side profile is visible to the camera</li>
-          <li>Ensure good lighting and a clear background</li>
-          <li>Start doing pushups - the counter will track automatically</li>
-          <li>Press 'Reset Counter' to start a new session</li>
-        </ul>
-      </div>
+      {showInstructions && (
+        <div className={styles.instructions}>
+          <h3>Instructions:</h3>
+          <ul>
+            <li>Position yourself so your side profile is visible to the camera</li>
+            <li>Ensure good lighting and a clear background</li>
+            <li>Start doing pushups - the counter will track automatically</li>
+            <li>Press 'Reset Counter' to start a new session</li>
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

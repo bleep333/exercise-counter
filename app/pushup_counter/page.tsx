@@ -23,7 +23,7 @@ export default function CounterPage() {
   return (
     <div className={styles.container}>
       <Link href="/counter" className={styles.backButton}>
-        ← Back to Counter
+        ← Back to Counters
       </Link>
       <h1 className={styles.title}>Pushup Counter</h1>
       <PoseCounter />
