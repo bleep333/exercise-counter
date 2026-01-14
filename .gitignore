@@ -13,6 +13,12 @@ ENV/
 sessions/
 sessions/*.json
 
+# Database
+data/
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
 # Next.js
 .next/
 out/

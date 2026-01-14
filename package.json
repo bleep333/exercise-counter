@@ -9,14 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1640029074",
+    "@mediapipe/drawing_utils": "^0.3.1620248257",
+    "@mediapipe/pose": "^0.5.1635989137",
+    "better-sqlite3": "^12.6.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@mediapipe/pose": "^0.5.1635989137",
-    "@mediapipe/camera_utils": "^0.3.1640029074",
-    "@mediapipe/drawing_utils": "^0.3.1620248257"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

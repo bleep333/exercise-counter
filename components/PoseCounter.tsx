@@ -47,6 +47,8 @@ export function PoseCounter() {
   const [error, setError] = useState<string | null>(null)
   const [sessionStart] = useState(Date.now())
   const [repTimes, setRepTimes] = useState<RepTime[]>([])
+  const [isSaving, setIsSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   // Angle calculation and state tracking
   const angleWindowRef = useRef<number[]>([])
@@ -357,6 +359,38 @@ export function PoseCounter() {
     }
   }, [])
 
+  const saveSession = async () => {
+    if (count === 0 || saved) return
+
+    try {
+      setIsSaving(true)
+      const duration = Date.now() - sessionStart
+      const response = await fetch('/api/exercises', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          exerciseType: 'pushups',
+          count,
+          duration,
+          completedAt: new Date().toISOString(),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save exercise')
+      }
+
+      setSaved(true)
+    } catch (err) {
+      console.error('Error saving session:', err)
+      alert('Failed to save session. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const resetCounter = () => {
     setCount(0)
     setState('UP')
@@ -364,6 +398,7 @@ export function PoseCounter() {
     angleWindowRef.current = []
     lastRepTimeRef.current = 0
     setRepTimes([])
+    setSaved(false)
   }
 
   const formatTime = (ms: number) => {
@@ -429,6 +464,13 @@ export function PoseCounter() {
       </div>
 
       <div className={styles.controls}>
+        <button 
+          onClick={saveSession} 
+          className={styles.saveButton}
+          disabled={count === 0 || saved || isSaving}
+        >
+          {isSaving ? 'Saving...' : saved ? '✓ Saved' : 'Save Session'}
+        </button>
         <button onClick={resetCounter} className={styles.resetButton}>
           Reset Counter
         </button>

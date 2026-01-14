@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { NavBar } from '@/components/NavBar'
 
 export const metadata: Metadata = {
-  title: 'Pushup Counter',
-  description: 'Real-time pushup counter using MediaPipe and computer vision',
+  title: 'Exercise Counter',
+  description: 'Real-time exercise counter using MediaPipe and computer vision',
 }
 
 export default function RootLayout({
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <NavBar />
+        {children}
+      </body>
     </html>
   )
 }
