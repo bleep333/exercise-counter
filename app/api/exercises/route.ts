@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import db from '@/lib/db'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const exercises = db
-      .prepare('SELECT * FROM exercises ORDER BY completed_at DESC')
-      .all()
-    
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+
+    // If user is logged in, fetch their exercises
+    // If not, return empty array (guest exercises are handled client-side)
+    const exercises = userId
+      ? await prisma.exercise.findMany({
+          where: { userId },
+          orderBy: { completedAt: 'desc' },
+        })
+      : []
+
     return NextResponse.json({ exercises })
   } catch (error) {
     console.error('Error fetching exercises:', error)
@@ -19,6 +29,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
     const body = await request.json()
     const { exerciseType, count, duration, completedAt } = body
 
@@ -29,18 +40,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = db
-      .prepare(
-        'INSERT INTO exercises (exercise_type, count, duration, completed_at) VALUES (?, ?, ?, ?)'
+    // If user is logged in, save to database
+    // If not, this should not be called (client should use localStorage)
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Please sign in to save exercises.' },
+        { status: 401 }
       )
-      .run(exerciseType, count, duration, completedAt)
+    }
+
+    const exercise = await prisma.exercise.create({
+      data: {
+        userId: session.user.id,
+        exerciseType,
+        count,
+        duration,
+        completedAt: new Date(completedAt),
+      },
+    })
 
     return NextResponse.json({
-      id: result.lastInsertRowid,
-      exerciseType,
-      count,
-      duration,
-      completedAt,
+      id: exercise.id,
+      exerciseType: exercise.exerciseType,
+      count: exercise.count,
+      duration: exercise.duration,
+      completedAt: exercise.completedAt.toISOString(),
     })
   } catch (error) {
     console.error('Error saving exercise:', error)

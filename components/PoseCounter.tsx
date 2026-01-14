@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { saveGuestExercise } from '@/lib/guest'
 import styles from './PoseCounter.module.css'
 
 interface RepTime {
@@ -34,6 +36,7 @@ function loadScript(src: string): Promise<void> {
 }
 
 export function PoseCounter() {
+  const { data: session } = useSession()
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const poseRef = useRef<any>(null)
@@ -365,24 +368,33 @@ export function PoseCounter() {
     try {
       setIsSaving(true)
       const duration = Date.now() - sessionStart
-      const response = await fetch('/api/exercises', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          exerciseType: 'pushups',
-          count,
-          duration,
-          completedAt: new Date().toISOString(),
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to save exercise')
+      const exerciseData = {
+        exerciseType: 'pushups',
+        count,
+        duration,
+        completedAt: new Date().toISOString(),
       }
 
-      setSaved(true)
+      if (session?.user) {
+        // User is logged in - save to database
+        const response = await fetch('/api/exercises', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(exerciseData),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to save exercise')
+        }
+
+        setSaved(true)
+      } else {
+        // Guest user - save to localStorage
+        saveGuestExercise(exerciseData)
+        setSaved(true)
+      }
     } catch (err) {
       console.error('Error saving session:', err)
       alert('Failed to save session. Please try again.')

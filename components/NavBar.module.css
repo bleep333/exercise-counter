@@ -71,6 +71,37 @@
   border-radius: 2px;
 }
 
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.userName {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.signOutButton {
+  padding: 0.5rem 1rem;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.signOutButton:hover {
+  background: rgba(102, 126, 234, 0.2);
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
