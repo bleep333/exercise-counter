@@ -44,6 +44,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?   // For credentials provider
+  profileName   String?   @unique // Public profile name for leaderboard
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

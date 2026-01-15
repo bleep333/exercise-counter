@@ -42,11 +42,34 @@ export function NavBar() {
                 <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" />
               )}
             </Link>
+            <Link 
+              href="/leaderboard" 
+              className={`px-3 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all relative ${
+                pathname === '/leaderboard' 
+                  ? 'text-purple-600 bg-purple-50' 
+                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+              }`}
+            >
+              Leaderboard
+              {pathname === '/leaderboard' && (
+                <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" />
+              )}
+            </Link>
             {session?.user ? (
               <div className="flex items-center gap-3 ml-2 pl-3 border-l border-gray-200">
                 <span className="text-sm text-gray-600 font-medium hidden sm:inline">
                   {session.user.name || session.user.email}
                 </span>
+                <Link
+                  href="/account"
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+                    pathname === '/account'
+                      ? 'text-purple-600 bg-purple-100'
+                      : 'text-purple-600 bg-purple-50 hover:bg-purple-100'
+                  }`}
+                >
+                  Account
+                </Link>
                 <button 
                   onClick={() => signOut()} 
                   className="px-3 py-1.5 text-sm font-semibold text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"

@@ -21,6 +21,7 @@ async function main() {
   const email = 'user@counter.com'
   const password = 'user123'
   const name = 'Test User'
+  const profileName = 'FitnessPro'
 
   // Check if user already exists
   let user = await prisma.user.findUnique({
@@ -37,11 +38,24 @@ async function main() {
         email,
         password: hashedPassword,
         name,
+        profileName,
       },
     })
     console.log('✅ Created dummy user:', email)
+    console.log('✅ Profile name set to:', profileName)
   } else {
     console.log('ℹ️  User already exists:', email)
+    
+    // Update profile name if not set
+    if (!user.profileName) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { profileName },
+      })
+      console.log('✅ Profile name set to:', profileName)
+    } else {
+      console.log('ℹ️  Profile name already set:', user.profileName)
+    }
   }
 
   // Create 2 workout sessions (only if they don't already exist)
