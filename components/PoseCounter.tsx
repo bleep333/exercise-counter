@@ -48,7 +48,10 @@ export function PoseCounter() {
   const [state, setState] = useState<'UP' | 'DOWN'>('UP')
   const [isInitialized, setIsInitialized] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [sessionStart] = useState(Date.now())
+  const [sessionActive, setSessionActive] = useState(false)
+  const sessionActiveRef = useRef(false)
+  const sessionStartRef = useRef<number | null>(null)
+  const [elapsedTime, setElapsedTime] = useState(0)
   const [repTimes, setRepTimes] = useState<RepTime[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -214,17 +217,22 @@ export function PoseCounter() {
                     smoothAngle > UP_ANGLE &&
                     now - lastRepTimeRef.current > MIN_REP_GAP
                   ) {
-                    setCount((prevCount) => {
-                      const newCount = prevCount + 1
-                      lastRepTimeRef.current = now
-                      stateRef.current = 'UP'
-                      setState('UP')
-                      setRepTimes((prev) => [
-                        ...prev,
-                        { timestamp: now, count: newCount },
-                      ])
-                      return newCount
-                    })
+                    // Always transition state back to UP
+                    lastRepTimeRef.current = now
+                    stateRef.current = 'UP'
+                    setState('UP')
+                    
+                    // Only count if session is active (use ref to get current value)
+                    if (sessionActiveRef.current) {
+                      setCount((prevCount) => {
+                        const newCount = prevCount + 1
+                        setRepTimes((prev) => [
+                          ...prev,
+                          { timestamp: now, count: newCount },
+                        ])
+                        return newCount
+                      })
+                    }
                   }
                 }
 
@@ -363,12 +371,44 @@ export function PoseCounter() {
     }
   }, [])
 
+  // Timer effect - updates elapsed time when session is active
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+
+    if (sessionActive && sessionStartRef.current) {
+      interval = setInterval(() => {
+        setElapsedTime(Date.now() - sessionStartRef.current!)
+      }, 100)
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [sessionActive])
+
+  const startStopSession = () => {
+    if (!sessionActive) {
+      // Start session
+      sessionStartRef.current = Date.now()
+      sessionActiveRef.current = true
+      setSessionActive(true)
+      setElapsedTime(0)
+      setSaved(false)
+    } else {
+      // Stop session
+      sessionActiveRef.current = false
+      setSessionActive(false)
+    }
+  }
+
   const saveSession = async () => {
-    if (count === 0 || saved) return
+    if (count === 0 || saved || !sessionStartRef.current) return
 
     try {
       setIsSaving(true)
-      const duration = Date.now() - sessionStart
+      const duration = elapsedTime || (Date.now() - sessionStartRef.current)
       const exerciseData = {
         exerciseType: 'pushups',
         count,
@@ -402,16 +442,6 @@ export function PoseCounter() {
     } finally {
       setIsSaving(false)
     }
-  }
-
-  const resetCounter = () => {
-    setCount(0)
-    setState('UP')
-    stateRef.current = 'UP'
-    angleWindowRef.current = []
-    lastRepTimeRef.current = 0
-    setRepTimes([])
-    setSaved(false)
   }
 
   const formatTime = (ms: number) => {
@@ -471,21 +501,25 @@ export function PoseCounter() {
         <div className={styles.statCard}>
           <div className={styles.statLabel}>Time</div>
           <div className={styles.statValue}>
-            {formatTime(Date.now() - sessionStart)}
+            {formatTime(elapsedTime)}
           </div>
         </div>
       </div>
 
       <div className={styles.controls}>
         <button 
+          onClick={startStopSession} 
+          className={sessionActive ? styles.stopButton : styles.startButton}
+          disabled={!isInitialized}
+        >
+          {sessionActive ? 'Stop' : 'Start Session'}
+        </button>
+        <button 
           onClick={saveSession} 
           className={styles.saveButton}
-          disabled={count === 0 || saved || isSaving}
+          disabled={count === 0 || saved || isSaving || sessionActive}
         >
           {isSaving ? 'Saving...' : saved ? '✓ Saved' : 'Save Session'}
-        </button>
-        <button onClick={resetCounter} className={styles.resetButton}>
-          Reset Counter
         </button>
         <button 
           onClick={() => setShowInstructions(!showInstructions)} 
@@ -501,8 +535,9 @@ export function PoseCounter() {
           <ul>
             <li>Position yourself so your side profile is visible to the camera</li>
             <li>Ensure good lighting and a clear background</li>
+            <li>Click 'Start Session' to begin tracking</li>
             <li>Start doing pushups - the counter will track automatically</li>
-            <li>Press 'Reset Counter' to start a new session</li>
+            <li>Click 'Stop' when you're done, then 'Save Session' to save your workout</li>
           </ul>
         </div>
       )}
