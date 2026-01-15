@@ -66,6 +66,63 @@ export function PoseCounter() {
   const MIN_REP_GAP = 400 // milliseconds
   const VIS_MIN = 0.5
 
+  // Audio context for beep sounds (created lazily after user interaction)
+  const audioContextRef = useRef<AudioContext | null>(null)
+
+  // Function to get or create audio context
+  const getAudioContext = (): AudioContext | null => {
+    if (audioContextRef.current) {
+      return audioContextRef.current
+    }
+    
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass()
+        return audioContextRef.current
+      }
+    } catch (error) {
+      console.debug('Audio context not available:', error)
+    }
+    
+    return null
+  }
+
+  // Function to play a soft beep sound
+  const playBeep = () => {
+    try {
+      const audioContext = getAudioContext()
+      if (!audioContext) return
+
+      // Resume audio context if it's suspended (browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(() => {
+          // Silently fail if resume is not allowed
+        })
+      }
+
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+
+      // Soft beep: 800Hz, short duration, low volume
+      oscillator.frequency.value = 800
+      oscillator.type = 'sine'
+      
+      // Low volume for soft beep (0.1 = 10% volume)
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1)
+
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.1) // 100ms duration
+    } catch (error) {
+      // Silently fail if audio is not available
+      console.debug('Beep sound not available:', error)
+    }
+  }
+
   const calculateAngle = (
     point1: { x: number; y: number },
     point2: { x: number; y: number },
@@ -223,6 +280,9 @@ export function PoseCounter() {
                     
                     // Only count if session is active (use ref to get current value)
                     if (sessionActiveRef.current) {
+                      // Play beep sound for completed rep
+                      playBeep()
+                      
                       setCount((prevCount) => {
                         const newCount = prevCount + 1
                         setRepTimes((prev) => [
