@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -70,6 +70,7 @@ export default function SignInPage() {
               id="email"
               type="email"
               value={email}
+              placeholder="user@counter.com"
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
@@ -85,6 +86,7 @@ export default function SignInPage() {
               id="password"
               type="password"
               value={password}
+              placeholder="user123"
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
@@ -109,5 +111,19 @@ export default function SignInPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[calc(100vh-4rem)] flex justify-center items-center py-8 px-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 md:p-12 max-w-md w-full shadow-2xl">
+          <p className="text-gray-600 text-center">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   )
 }
