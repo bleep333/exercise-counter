@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import styles from './page.module.css'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -47,16 +46,26 @@ export default function SignInPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Sign In</h1>
-        <p className={styles.subtitle}>Sign in to your account to sync your stats</p>
+    <div className="min-h-[calc(100vh-4rem)] flex justify-center items-center py-8 px-4">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 md:p-12 max-w-md w-full shadow-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 text-center">
+          Sign In
+        </h1>
+        <p className="text-gray-600 text-center mb-6 sm:mb-8 text-sm sm:text-base">
+          Sign in to your account to sync your stats
+        </p>
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center text-sm">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label htmlFor="email">Email</label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email" className="font-semibold text-gray-700 text-sm">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -64,11 +73,14 @@ export default function SignInPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-purple-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="password">Password</label>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="font-semibold text-gray-700 text-sm">
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -76,17 +88,22 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
+              className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-purple-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
-          <button type="submit" className={styles.submitButton} disabled={loading}>
+          <button 
+            type="submit" 
+            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 mt-2"
+            disabled={loading}
+          >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <p className={styles.footer}>
+        <p className="text-center mt-6 sm:mt-8 text-gray-600 text-sm sm:text-base">
           Don't have an account?{' '}
-          <Link href="/auth/signup" className={styles.link}>
+          <Link href="/auth/signup" className="text-purple-600 font-semibold hover:underline">
             Sign up
           </Link>
         </p>

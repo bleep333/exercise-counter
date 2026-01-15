@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { saveGuestExercise } from '@/lib/guest'
-import styles from './PoseCounter.module.css'
 
 interface RepTime {
   timestamp: number
@@ -453,9 +452,9 @@ export function PoseCounter() {
 
   if (error) {
     return (
-      <div className={styles.errorContainer}>
-        <p className={styles.error}>{error}</p>
-        <Link href="/" className={styles.backLink}>
+      <div className="text-center p-12 bg-white rounded-2xl max-w-md shadow-lg">
+        <p className="text-red-500 text-xl mb-8">{error}</p>
+        <Link href="/" className="inline-block px-6 py-3 bg-purple-600 text-white rounded-full font-semibold hover:bg-purple-700 hover:-translate-y-0.5 transition-all">
           Go Back
         </Link>
       </div>
@@ -463,11 +462,11 @@ export function PoseCounter() {
   }
 
   return (
-    <div className={styles.counterContainer}>
-      <div className={styles.videoContainer}>
+    <div className="flex flex-col items-center gap-6 w-full max-w-5xl">
+      <div className="relative w-full max-w-[500px] max-h-[375px] rounded-2xl overflow-hidden shadow-2xl bg-black">
         <video
           ref={videoRef}
-          className={styles.video}
+          className="w-full h-auto block invisible absolute"
           style={{ visibility: 'hidden', position: 'absolute' }}
           playsInline
           autoPlay
@@ -475,69 +474,83 @@ export function PoseCounter() {
         />
         <canvas
           ref={canvasRef}
-          className={styles.canvas}
+          className="w-full h-auto block"
           width={640}
           height={480}
         />
         {!isInitialized && (
-          <div className={styles.loadingOverlay}>
-            <p>Initializing camera...</p>
-            <p className={styles.loadingNote}>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white bg-black/70 p-8 rounded-xl">
+            <p className="text-lg">Initializing camera...</p>
+            <p className="text-sm text-gray-300 mt-2">
               Please allow camera access when prompted
             </p>
           </div>
         )}
       </div>
 
-      <div className={styles.statsPanel}>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Pushups</div>
-          <div className={styles.statValue}>{count}</div>
+      <div className="flex flex-wrap gap-4 sm:gap-6 justify-center w-full">
+        <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
+          <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Pushups</div>
+          <div className="text-3xl font-bold text-purple-600">{count}</div>
         </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>State</div>
-          <div className={styles.statValue}>{state}</div>
+        <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
+          <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">State</div>
+          <div className="text-3xl font-bold text-purple-600">{state}</div>
         </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Time</div>
-          <div className={styles.statValue}>
+        <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
+          <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Time</div>
+          <div className="text-3xl font-bold text-purple-600">
             {formatTime(elapsedTime)}
           </div>
         </div>
       </div>
 
-      <div className={styles.controls}>
+      <div className="flex flex-wrap gap-3 sm:gap-4 mt-2 justify-center">
         <button 
           onClick={startStopSession} 
-          className={sessionActive ? styles.stopButton : styles.startButton}
+          className={`px-6 py-3 rounded-full font-semibold text-sm sm:text-base transition-all shadow-lg ${
+            sessionActive
+              ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:-translate-y-0.5'
+              : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:-translate-y-0.5'
+          } ${!isInitialized ? 'opacity-60 cursor-not-allowed' : ''}`}
           disabled={!isInitialized}
         >
           {sessionActive ? 'Stop' : 'Start Session'}
         </button>
         <button 
           onClick={saveSession} 
-          className={styles.saveButton}
+          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
           disabled={count === 0 || saved || isSaving || sessionActive}
         >
           {isSaving ? 'Saving...' : saved ? '✓ Saved' : 'Save Session'}
         </button>
         <button 
           onClick={() => setShowInstructions(!showInstructions)} 
-          className={styles.instructionsToggle}
+          className="px-6 py-3 text-purple-600 bg-white border-2 border-purple-600 rounded-full font-semibold text-sm sm:text-base shadow-md hover:bg-purple-600 hover:text-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
         >
           {showInstructions ? 'Hide' : 'Show'} Instructions
         </button>
       </div>
 
       {showInstructions && (
-        <div className={styles.instructions}>
-          <h3>Instructions:</h3>
-          <ul>
-            <li>Position yourself so your side profile is visible to the camera</li>
-            <li>Ensure good lighting and a clear background</li>
-            <li>Click 'Start Session' to begin tracking</li>
-            <li>Start doing pushups - the counter will track automatically</li>
-            <li>Click 'Stop' when you're done, then 'Save Session' to save your workout</li>
+        <div className="bg-white rounded-2xl p-6 max-w-2xl shadow-lg text-sm">
+          <h3 className="text-gray-800 mb-4 text-xl font-bold">Instructions:</h3>
+          <ul className="list-none p-0 space-y-2">
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+              Position yourself so your side profile is visible to the camera
+            </li>
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+              Ensure good lighting and a clear background
+            </li>
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+              Click 'Start Session' to begin tracking
+            </li>
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+              Start doing pushups - the counter will track automatically
+            </li>
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+              Click 'Stop' when you're done, then 'Save Session' to save your workout
+            </li>
           </ul>
         </div>
       )}
