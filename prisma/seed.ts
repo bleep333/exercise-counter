@@ -21,7 +21,7 @@ async function main() {
   const email = 'user@counter.com'
   const password = 'user123'
   const name = 'Test User'
-  const profileName = 'FitnessPro'
+  const profileName = 'bleep'
 
   // Check if user already exists
   let user = await prisma.user.findUnique({
