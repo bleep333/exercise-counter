@@ -61,3 +61,11 @@ export function hasGuestExercises(): boolean {
   const exercises = getGuestExercises()
   return exercises.length > 0
 }
+
+export function deleteGuestExercise(exerciseId: string): void {
+  if (typeof window === 'undefined') return
+  
+  const exercises = getGuestExercises()
+  const filtered = exercises.filter(ex => ex.id !== exerciseId)
+  localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(filtered))
+}

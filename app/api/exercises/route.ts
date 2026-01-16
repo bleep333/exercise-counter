@@ -85,3 +85,57 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const { searchParams } = new URL(request.url)
+    const exerciseId = searchParams.get('id')
+
+    if (!exerciseId) {
+      return NextResponse.json(
+        { error: 'Exercise ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Verify the exercise belongs to the user
+    const exercise = await prisma.exercise.findUnique({
+      where: { id: exerciseId },
+    })
+
+    if (!exercise) {
+      return NextResponse.json(
+        { error: 'Exercise not found' },
+        { status: 404 }
+      )
+    }
+
+    if (exercise.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      )
+    }
+
+    await prisma.exercise.delete({
+      where: { id: exerciseId },
+    })
+
+    return NextResponse.json({ message: 'Exercise deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting exercise:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete exercise' },
+      { status: 500 }
+    )
+  }
+}

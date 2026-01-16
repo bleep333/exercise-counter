@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { getGuestExercises, hasGuestExercises, clearGuestExercises, type GuestExercise } from '@/lib/guest'
+import { getGuestExercises, hasGuestExercises, clearGuestExercises, deleteGuestExercise, type GuestExercise } from '@/lib/guest'
 import { calculateCalories } from '@/lib/calories'
 
 interface Exercise {
@@ -108,6 +108,48 @@ export default function StatsPage() {
       alert('Failed to migrate exercises. Please try again.')
     } finally {
       setMigrating(false)
+    }
+  }
+
+  const handleDeleteExercise = async (exerciseId: string) => {
+    if (!confirm('Are you sure you want to delete this exercise session?')) {
+      return
+    }
+
+    try {
+      if (session?.user) {
+        // Delete from database
+        const response = await fetch(`/api/exercises?id=${exerciseId}`, {
+          method: 'DELETE',
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to delete exercise')
+        }
+      } else {
+        // Delete from localStorage for guest users
+        deleteGuestExercise(exerciseId)
+      }
+
+      // Refresh the exercises list
+      fetchExercises()
+    } catch (err) {
+      console.error('Error deleting exercise:', err)
+      alert('Failed to delete exercise. Please try again.')
+    }
+  }
+
+  const handleClearAllGuestExercises = () => {
+    if (!confirm('Are you sure you want to delete all exercise sessions? This cannot be undone.')) {
+      return
+    }
+
+    try {
+      clearGuestExercises()
+      fetchExercises()
+    } catch (err) {
+      console.error('Error clearing exercises:', err)
+      alert('Failed to clear exercises. Please try again.')
     }
   }
 
@@ -448,11 +490,21 @@ export default function StatsPage() {
                   </div>
                 </div>
               )}
-              {filteredAndSortedExercises.length !== exercises.length && (
-                <div className="mb-4 text-sm text-gray-500">
-                  Showing {filteredAndSortedExercises.length} of {exercises.length} exercises
-                </div>
-              )}
+              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                {filteredAndSortedExercises.length !== exercises.length && (
+                  <div className="text-sm text-gray-500">
+                    Showing {filteredAndSortedExercises.length} of {exercises.length} exercises
+                  </div>
+                )}
+                {!session?.user && exercises.length > 0 && (
+                  <button
+                    onClick={handleClearAllGuestExercises}
+                    className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors self-start sm:self-auto"
+                  >
+                    Clear All Sessions
+                  </button>
+                )}
+              </div>
               {filteredAndSortedExercises.length === 0 ? (
                 <div className="bg-white rounded-2xl p-8 sm:p-12 text-center shadow-lg">
                   <p className="text-lg sm:text-xl text-gray-600 mb-2">
@@ -472,11 +524,12 @@ export default function StatsPage() {
                     <div className="inline-block min-w-full align-middle">
                       <table className="min-w-full table-fixed">
                         <colgroup>
-                          <col className="w-[20%] sm:w-[25%]" />
-                          <col className="w-[25%] sm:w-[25%]" />
-                          <col className="w-[15%] sm:w-[15%]" />
-                          <col className="w-[15%] sm:w-[15%]" />
-                          <col className="w-[25%] sm:w-[20%]" />
+                          <col className="w-[18%] sm:w-[22%]" />
+                          <col className="w-[22%] sm:w-[22%]" />
+                          <col className="w-[12%] sm:w-[12%]" />
+                          <col className="w-[12%] sm:w-[12%]" />
+                          <col className="w-[20%] sm:w-[18%]" />
+                          <col className="w-[16%] sm:w-[14%]" />
                         </colgroup>
                         <thead className="bg-gray-50">
                           <tr>
@@ -545,6 +598,8 @@ export default function StatsPage() {
                                 )}
                               </div>
                             </th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-center text-xs sm:text-sm font-semibold text-gray-700 w-[50px]">
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -576,6 +631,17 @@ export default function StatsPage() {
                                   ) : (
                                     <span className="text-gray-400 italic">Unavailable</span>
                                   )}
+                                </td>
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-center">
+                                  <button
+                                    onClick={() => handleDeleteExercise(exercise.id)}
+                                    className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                                    title="Delete this session"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
                                 </td>
                               </tr>
                             )
