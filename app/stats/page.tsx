@@ -38,6 +38,8 @@ export default function StatsPage() {
         }
         const data = await response.json()
         setExercises(data.exercises || [])
+        // Check for guest exercises even when signed in (for migration after signup)
+        setShowGuestPrompt(hasGuestExercises())
       } else {
         const guestExercises = getGuestExercises()
         setExercises(guestExercises.map(ex => ({
@@ -154,45 +156,49 @@ export default function StatsPage() {
           Exercise Statistics
         </h1>
         
-        {showGuestPrompt && (
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
-            <div className="text-white">
-              <h3 className="text-xl sm:text-2xl font-bold mb-3">💾 Save Your Stats</h3>
-              <p className="text-base sm:text-lg mb-6 leading-relaxed opacity-95">
-                You have {exercises.length} exercise session{exercises.length !== 1 ? 's' : ''} stored locally. 
-                {session?.user 
-                  ? ' Click below to migrate them to your account.' 
-                  : ' Sign up to save them to your account and access them from any device.'}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {session?.user ? (
-                  <button 
-                    onClick={handleMigrateGuestData} 
-                    className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                    disabled={migrating}
-                  >
-                    {migrating ? 'Migrating...' : 'Migrate to Account'}
-                  </button>
-                ) : (
-                  <>
+        {showGuestPrompt && (() => {
+          const guestExercises = getGuestExercises()
+          const guestCount = guestExercises.length
+          return (
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
+              <div className="text-white">
+                <h3 className="text-xl sm:text-2xl font-bold mb-3">💾 Save Your Stats</h3>
+                <p className="text-base sm:text-lg mb-6 leading-relaxed opacity-95">
+                  You have {guestCount} exercise session{guestCount !== 1 ? 's' : ''} stored locally. 
+                  {session?.user 
+                    ? ' Click below to migrate them to your account.' 
+                    : ' Sign up to save them to your account and access them from any device.'}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {session?.user ? (
                     <button 
-                      onClick={() => router.push('/auth/signup')} 
-                      className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                      onClick={handleMigrateGuestData} 
+                      className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      disabled={migrating}
                     >
-                      Sign Up
+                      {migrating ? 'Migrating...' : 'Migrate to Account'}
                     </button>
-                    <button 
-                      onClick={() => setShowGuestPrompt(false)} 
-                      className="px-6 py-3 bg-white/20 text-white border-2 border-white rounded-lg font-semibold hover:bg-white/30 transition-all"
-                    >
-                      Dismiss
-                    </button>
-                  </>
-                )}
+                  ) : (
+                    <>
+                      <button 
+                        onClick={() => router.push('/auth/signup')} 
+                        className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                      >
+                        Sign Up
+                      </button>
+                      <button 
+                        onClick={() => setShowGuestPrompt(false)} 
+                        className="px-6 py-3 bg-white/20 text-white border-2 border-white rounded-lg font-semibold hover:bg-white/30 transition-all"
+                      >
+                        Dismiss
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <div className="bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
