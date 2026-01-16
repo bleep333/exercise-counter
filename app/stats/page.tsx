@@ -34,6 +34,9 @@ export default function StatsPage() {
   const [filterExerciseType, setFilterExerciseType] = useState<string>('all')
   const [filterDateFrom, setFilterDateFrom] = useState<string>('')
   const [filterDateTo, setFilterDateTo] = useState<string>('')
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
+  const [confirmingClearAll, setConfirmingClearAll] = useState(false)
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchExercises()
@@ -111,12 +114,21 @@ export default function StatsPage() {
     }
   }
 
-  const handleDeleteExercise = async (exerciseId: string) => {
-    if (!confirm('Are you sure you want to delete this exercise session?')) {
-      return
-    }
+  const handleDeleteClick = (exerciseId: string) => {
+    setConfirmingDeleteId(exerciseId)
+  }
 
+  const handleDeleteCancel = () => {
+    setConfirmingDeleteId(null)
+  }
+
+  const handleDeleteConfirm = async (exerciseId: string) => {
     try {
+      setConfirmingDeleteId(null)
+      
+      // Start animation first
+      setDeletingIds(prev => new Set(prev).add(exerciseId))
+
       if (session?.user) {
         // Delete from database
         const response = await fetch(`/api/exercises?id=${exerciseId}`, {
@@ -131,25 +143,44 @@ export default function StatsPage() {
         deleteGuestExercise(exerciseId)
       }
 
-      // Refresh the exercises list
-      fetchExercises()
+      // Wait for animation to complete before removing from state
+      setTimeout(() => {
+        setExercises(prev => prev.filter(ex => ex.id !== exerciseId))
+        setDeletingIds(prev => {
+          const next = new Set(prev)
+          next.delete(exerciseId)
+          return next
+        })
+      }, 400) // Slightly longer than animation to ensure it completes
     } catch (err) {
       console.error('Error deleting exercise:', err)
       alert('Failed to delete exercise. Please try again.')
+      setDeletingIds(prev => {
+        const next = new Set(prev)
+        next.delete(exerciseId)
+        return next
+      })
     }
   }
 
-  const handleClearAllGuestExercises = () => {
-    if (!confirm('Are you sure you want to delete all exercise sessions? This cannot be undone.')) {
-      return
-    }
+  const handleClearAllClick = () => {
+    setConfirmingClearAll(true)
+  }
 
+  const handleClearAllCancel = () => {
+    setConfirmingClearAll(false)
+  }
+
+  const handleClearAllConfirm = () => {
     try {
       clearGuestExercises()
-      fetchExercises()
+      // Update exercises state directly without reloading
+      setExercises([])
+      setConfirmingClearAll(false)
     } catch (err) {
       console.error('Error clearing exercises:', err)
       alert('Failed to clear exercises. Please try again.')
+      setConfirmingClearAll(false)
     }
   }
 
@@ -497,12 +528,31 @@ export default function StatsPage() {
                   </div>
                 )}
                 {!session?.user && exercises.length > 0 && (
-                  <button
-                    onClick={handleClearAllGuestExercises}
-                    className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors self-start sm:self-auto"
-                  >
-                    Clear All Sessions
-                  </button>
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    {confirmingClearAll ? (
+                      <>
+                        <button
+                          onClick={handleClearAllConfirm}
+                          className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        >
+                          Confirm Clear All
+                        </button>
+                        <button
+                          onClick={handleClearAllCancel}
+                          className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={handleClearAllClick}
+                        className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        Clear All Sessions
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
               {filteredAndSortedExercises.length === 0 ? (
@@ -529,7 +579,7 @@ export default function StatsPage() {
                           <col className="w-[12%] sm:w-[12%]" />
                           <col className="w-[12%] sm:w-[12%]" />
                           <col className="w-[20%] sm:w-[18%]" />
-                          <col className="w-[16%] sm:w-[14%]" />
+                          <col style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }} />
                         </colgroup>
                         <thead className="bg-gray-50">
                           <tr>
@@ -598,17 +648,18 @@ export default function StatsPage() {
                                 )}
                               </div>
                             </th>
-                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-center text-xs sm:text-sm font-semibold text-gray-700 w-[50px]">
+                            <th className="px-1 py-3 sm:py-4 text-center text-xs sm:text-sm font-semibold text-gray-700" style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
                             </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {filteredAndSortedExercises.map((exercise) => {
                             const calories = calculateCalories(exercise.exerciseType, exercise.duration, userWeight)
+                            const isDeleting = deletingIds.has(exercise.id)
                             return (
                               <tr
                                 key={exercise.id}
-                                className="hover:bg-purple-50 transition-colors"
+                                className={`hover:bg-purple-50 ${isDeleting ? 'animate-slide-out' : ''}`}
                               >
                                 <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900">
                                   <div className="flex items-center gap-1 sm:gap-2">
@@ -632,16 +683,38 @@ export default function StatsPage() {
                                     <span className="text-gray-400 italic">Unavailable</span>
                                   )}
                                 </td>
-                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-center">
-                                  <button
-                                    onClick={() => handleDeleteExercise(exercise.id)}
-                                    className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
-                                    title="Delete this session"
-                                  >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
+                                <td className="px-1 py-3 sm:py-4 text-center" style={{ width: '70px', minWidth: '70px', maxWidth: '70px', tableLayout: 'fixed' }}>
+                                  <div className="flex items-center justify-center w-full" style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
+                                    {confirmingDeleteId === exercise.id ? (
+                                      <div className="flex items-center gap-1 justify-center w-full">
+                                        <button
+                                          onClick={() => handleDeleteConfirm(exercise.id)}
+                                          className="text-red-600 hover:text-red-700 font-semibold text-base px-1 py-1 rounded hover:bg-red-50 transition-colors leading-none"
+                                          title="Confirm delete"
+                                        >
+                                          ✓
+                                        </button>
+                                        <button
+                                          onClick={handleDeleteCancel}
+                                          className="text-gray-600 hover:text-gray-700 font-semibold text-base px-1 py-1 rounded hover:bg-gray-50 transition-colors leading-none"
+                                          title="Cancel"
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleDeleteClick(exercise.id)}
+                                        className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded inline-flex items-center justify-center"
+                                        title="Delete this session"
+                                        style={{ width: '28px', height: '28px' }}
+                                      >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             )
