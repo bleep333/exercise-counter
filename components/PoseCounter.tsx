@@ -55,6 +55,8 @@ export function PoseCounter() {
   const [isSaving, setIsSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // Angle calculation and state tracking
   const angleWindowRef = useRef<number[]>([])
@@ -510,6 +512,64 @@ export function PoseCounter() {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
+  const enterFullscreen = async () => {
+    if (!containerRef.current) return
+
+    try {
+      if (containerRef.current.requestFullscreen) {
+        await containerRef.current.requestFullscreen()
+      } else if ((containerRef.current as any).webkitRequestFullscreen) {
+        await (containerRef.current as any).webkitRequestFullscreen()
+      } else if ((containerRef.current as any).mozRequestFullScreen) {
+        await (containerRef.current as any).mozRequestFullScreen()
+      } else if ((containerRef.current as any).msRequestFullscreen) {
+        await (containerRef.current as any).msRequestFullscreen()
+      }
+    } catch (error) {
+      console.error('Error entering fullscreen:', error)
+    }
+  }
+
+  const exitFullscreen = async () => {
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen()
+      } else if ((document as any).webkitExitFullscreen) {
+        await (document as any).webkitExitFullscreen()
+      } else if ((document as any).mozCancelFullScreen) {
+        await (document as any).mozCancelFullScreen()
+      } else if ((document as any).msExitFullscreen) {
+        await (document as any).msExitFullscreen()
+      }
+    } catch (error) {
+      console.error('Error exiting fullscreen:', error)
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      )
+      setIsFullscreen(isCurrentlyFullscreen)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange)
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange)
+    }
+  }, [])
+
   if (error) {
     return (
       <div className="text-center p-12 bg-white rounded-2xl max-w-md shadow-lg">
@@ -522,8 +582,56 @@ export function PoseCounter() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-5xl">
-      <div className="relative w-full max-w-[500px] max-h-[375px] rounded-2xl overflow-hidden shadow-2xl bg-black">
+    <div 
+      ref={containerRef}
+      className={`flex flex-col items-center gap-6 w-full max-w-5xl ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}
+    >
+      <div className={`relative ${isFullscreen ? 'w-full h-full flex items-center justify-center' : 'w-full max-w-[500px] max-h-[375px] rounded-2xl overflow-hidden shadow-2xl bg-black'}`}>
+        {isFullscreen && (
+          <>
+            {/* Rep count - top left */}
+            <div className="absolute top-6 left-6 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4">
+              <div className="text-xs text-gray-300 mb-1 font-semibold uppercase tracking-wide">Pushups</div>
+              <div className="text-5xl font-bold text-white">{count}</div>
+            </div>
+
+            {/* Time - top right (with space for exit button) */}
+            <div className="absolute top-6 right-20 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4">
+              <div className="text-xs text-gray-300 mb-1 font-semibold uppercase tracking-wide">Time</div>
+              <div className="text-5xl font-bold text-white">
+                {formatTime(elapsedTime)}
+              </div>
+            </div>
+
+            {/* Exit fullscreen button - top right (above time) */}
+            <button
+              onClick={exitFullscreen}
+              className="absolute top-6 right-6 z-20 bg-black/70 backdrop-blur-sm hover:bg-black/90 text-white rounded-xl px-4 py-3 transition-all mb-2"
+              title="Exit fullscreen"
+              style={{ transform: 'translateY(-100%)', marginBottom: '8px' }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Start/Stop Session button - bottom center */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+              <button 
+                onClick={startStopSession} 
+                className={`px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-2xl ${
+                  sessionActive
+                    ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:scale-105'
+                    : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:scale-105'
+                } ${!isInitialized ? 'opacity-60 cursor-not-allowed' : ''}`}
+                disabled={!isInitialized}
+              >
+                {sessionActive ? 'Stop Session' : 'Start Session'}
+              </button>
+            </div>
+          </>
+        )}
+
         <video
           ref={videoRef}
           className="w-full h-auto block invisible absolute"
@@ -534,17 +642,30 @@ export function PoseCounter() {
         />
         <canvas
           ref={canvasRef}
-          className="w-full h-auto block"
+          className={isFullscreen ? 'w-full h-full object-contain' : 'w-full h-auto block'}
           width={640}
           height={480}
         />
         {!isInitialized && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white bg-black/70 p-8 rounded-xl">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white bg-black/70 p-8 rounded-xl z-20">
             <p className="text-lg">Initializing camera...</p>
             <p className="text-sm text-gray-300 mt-2">
               Please allow camera access when prompted
             </p>
           </div>
+        )}
+
+        {/* Fullscreen button - bottom right (only when not in fullscreen) */}
+        {!isFullscreen && (
+          <button
+            onClick={enterFullscreen}
+            className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm hover:bg-black/90 text-white rounded-xl p-3 transition-all z-10"
+            title="Enter fullscreen"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+          </button>
         )}
       </div>
 
