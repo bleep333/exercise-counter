@@ -497,6 +497,16 @@ export function PoseCounter() {
         saveGuestExercise(exerciseData)
         setSaved(true)
       }
+
+      // Show "Saved successfully" message for 2 seconds before resetting
+      setTimeout(() => {
+        // Reset counters and timer after showing success message
+        setCount(0)
+        setElapsedTime(0)
+        setRepTimes([])
+        sessionStartRef.current = null
+        setSaved(false) // Reset saved state so user can start a new session
+      }, 2000)
     } catch (err) {
       console.error('Error saving session:', err)
       alert('Failed to save session. Please try again.')
@@ -616,10 +626,10 @@ export function PoseCounter() {
             </button>
 
             {/* Start/Stop Session button - bottom center */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex flex-col items-center gap-4">
               <button 
                 onClick={startStopSession} 
-                className={`px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-2xl ${
+                className={`px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-2xl min-w-[200px] ${
                   sessionActive
                     ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:scale-105'
                     : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:scale-105'
@@ -628,6 +638,17 @@ export function PoseCounter() {
               >
                 {sessionActive ? 'Stop Session' : 'Start Session'}
               </button>
+              
+              {/* Save Session button - shown when session is stopped and has count */}
+              {(!sessionActive && (count > 0 || saved)) && (
+                <button 
+                  onClick={saveSession} 
+                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold text-lg shadow-2xl hover:shadow-xl hover:scale-105 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-2xl min-w-[200px]"
+                  disabled={saved || isSaving}
+                >
+                  {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
+                </button>
+              )}
             </div>
           </>
         )}
@@ -689,7 +710,7 @@ export function PoseCounter() {
       <div className="flex flex-wrap gap-3 sm:gap-4 mt-2 justify-center">
         <button 
           onClick={startStopSession} 
-          className={`px-6 py-3 rounded-full font-semibold text-sm sm:text-base transition-all shadow-lg ${
+          className={`px-6 py-3 rounded-full font-semibold text-sm sm:text-base transition-all shadow-lg min-w-[140px] ${
             sessionActive
               ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:-translate-y-0.5'
               : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:-translate-y-0.5'
@@ -700,10 +721,10 @@ export function PoseCounter() {
         </button>
         <button 
           onClick={saveSession} 
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
-          disabled={count === 0 || saved || isSaving || sessionActive}
+          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg min-w-[160px]"
+          disabled={(count === 0 && !saved) || saved || isSaving || sessionActive}
         >
-          {isSaving ? 'Saving...' : saved ? '✓ Saved' : 'Save Session'}
+          {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
         </button>
         <button 
           onClick={() => setShowInstructions(!showInstructions)} 
