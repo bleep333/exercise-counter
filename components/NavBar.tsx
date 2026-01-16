@@ -43,6 +43,19 @@ export function NavBar() {
               )}
             </Link>
             <Link 
+              href="/goals" 
+              className={`px-3 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all relative ${
+                pathname === '/goals' 
+                  ? 'text-purple-600 bg-purple-50' 
+                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+              }`}
+            >
+              Goals
+              {pathname === '/goals' && (
+                <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" />
+              )}
+            </Link>
+            <Link 
               href="/leaderboard" 
               className={`px-3 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all relative ${
                 pathname === '/leaderboard' 
