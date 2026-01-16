@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
         profileName: true,
         email: true,
         name: true,
+        weight: true,
       },
     })
 
@@ -30,7 +31,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ profileName: user.profileName })
+    return NextResponse.json({ 
+      profileName: user.profileName,
+      weight: user.weight,
+    })
   } catch (error) {
     console.error('Error fetching profile:', error)
     return NextResponse.json(
@@ -52,56 +56,89 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { profileName } = body
+    const { profileName, weight } = body
 
-    if (!profileName || typeof profileName !== 'string') {
-      return NextResponse.json(
-        { error: 'Profile name is required' },
-        { status: 400 }
-      )
+    const updateData: { profileName?: string; weight?: number } = {}
+
+    // Handle profile name update
+    if (profileName !== undefined) {
+      if (typeof profileName !== 'string') {
+        return NextResponse.json(
+          { error: 'Profile name must be a string' },
+          { status: 400 }
+        )
+      }
+
+      const trimmedName = profileName.trim()
+
+      if (trimmedName.length < 3) {
+        return NextResponse.json(
+          { error: 'Profile name must be at least 3 characters' },
+          { status: 400 }
+        )
+      }
+
+      if (trimmedName.length > 30) {
+        return NextResponse.json(
+          { error: 'Profile name must be 30 characters or less' },
+          { status: 400 }
+        )
+      }
+
+      // Check if profile name is already taken by another user
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          profileName: trimmedName,
+          id: { not: session.user.id }, // Exclude current user
+        },
+      })
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'This profile name is already taken. Please choose another.' },
+          { status: 400 }
+        )
+      }
+
+      updateData.profileName = trimmedName
     }
 
-    const trimmedName = profileName.trim()
-
-    if (trimmedName.length < 3) {
-      return NextResponse.json(
-        { error: 'Profile name must be at least 3 characters' },
-        { status: 400 }
-      )
+    // Handle weight update
+    if (weight !== undefined) {
+      if (weight === null || weight === '') {
+        updateData.weight = null
+      } else {
+        const weightNum = typeof weight === 'string' ? parseFloat(weight) : weight
+        if (isNaN(weightNum) || weightNum <= 0) {
+          return NextResponse.json(
+            { error: 'Weight must be a positive number' },
+            { status: 400 }
+          )
+        }
+        if (weightNum > 500) {
+          return NextResponse.json(
+            { error: 'Weight must be reasonable (less than 500 kg)' },
+            { status: 400 }
+          )
+        }
+        updateData.weight = weightNum
+      }
     }
 
-    if (trimmedName.length > 30) {
-      return NextResponse.json(
-        { error: 'Profile name must be 30 characters or less' },
-        { status: 400 }
-      )
-    }
-
-    // Check if profile name is already taken by another user
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        profileName: trimmedName,
-        id: { not: session.user.id }, // Exclude current user
-      },
-    })
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'This profile name is already taken. Please choose another.' },
-        { status: 400 }
-      )
-    }
-
-    // Update user profile name
+    // Update user profile
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: { profileName: trimmedName },
+      data: updateData,
       select: {
         profileName: true,
+        weight: true,
       },
     })
 
-    return NextResponse.json({ profileName: updatedUser.profileName })
+    return NextResponse.json({ 
+      profileName: updatedUser.profileName,
+      weight: updatedUser.weight,
+    })
   } catch (error) {
     console.error('Error updating profile:', error)
     

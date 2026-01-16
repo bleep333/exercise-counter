@@ -8,16 +8,27 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
     const userId = session?.user?.id
 
-    // If user is logged in, fetch their exercises
+    // If user is logged in, fetch their exercises and weight
     // If not, return empty array (guest exercises are handled client-side)
-    const exercises = userId
-      ? await prisma.exercise.findMany({
+    if (userId) {
+      const [exercises, user] = await Promise.all([
+        prisma.exercise.findMany({
           where: { userId },
           orderBy: { completedAt: 'desc' },
-        })
-      : []
+        }),
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { weight: true },
+        }),
+      ])
 
-    return NextResponse.json({ exercises })
+      return NextResponse.json({ 
+        exercises,
+        weight: user?.weight || null,
+      })
+    }
+
+    return NextResponse.json({ exercises: [], weight: null })
   } catch (error) {
     console.error('Error fetching exercises:', error)
     return NextResponse.json(

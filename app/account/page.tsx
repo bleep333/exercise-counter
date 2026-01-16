@@ -8,6 +8,7 @@ export default function AccountPage() {
   const { data: session, update } = useSession()
   const router = useRouter()
   const [profileName, setProfileName] = useState('')
+  const [weight, setWeight] = useState<string>('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,13 +20,14 @@ export default function AccountPage() {
       return
     }
 
-    // Fetch current profile name
+    // Fetch current profile data
     const fetchProfile = async () => {
       try {
         const response = await fetch('/api/user/profile')
         if (response.ok) {
           const data = await response.json()
           setProfileName(data.profileName || '')
+          setWeight(data.weight ? data.weight.toString() : '')
         }
       } catch (err) {
         console.error('Error fetching profile:', err)
@@ -57,23 +59,39 @@ export default function AccountPage() {
       return
     }
 
+    // Validate weight if provided
+    if (weight.trim() && (isNaN(parseFloat(weight)) || parseFloat(weight) <= 0)) {
+      setError('Weight must be a positive number')
+      return
+    }
+
     setLoading(true)
 
     try {
+      const updateData: { profileName: string; weight?: number | null } = {
+        profileName: profileName.trim(),
+      }
+
+      if (weight.trim()) {
+        updateData.weight = parseFloat(weight)
+      } else {
+        updateData.weight = null
+      }
+
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profileName: profileName.trim() }),
+        body: JSON.stringify(updateData),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Failed to update profile name')
+        setError(data.error || 'Failed to update profile')
         return
       }
 
-      setSuccess('Profile name updated successfully!')
+      setSuccess('Profile updated successfully!')
       // Update session to reflect new profile name
       await update()
     } catch (err) {
@@ -142,12 +160,33 @@ export default function AccountPage() {
             </p>
           </div>
 
+          <div className="flex flex-col gap-2">
+            <label htmlFor="weight" className="font-semibold text-gray-700 text-sm">
+              Weight (kg) <span className="text-gray-400 text-xs">(optional)</span>
+            </label>
+            <input
+              id="weight"
+              type="number"
+              step="0.1"
+              min="0"
+              max="500"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              disabled={loading}
+              placeholder="Enter your weight in kilograms"
+              className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-purple-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
+            />
+            <p className="text-xs text-gray-500">
+              Your weight is used to calculate calories burned during exercises. Leave empty to hide calorie estimates.
+            </p>
+          </div>
+
           <button 
             type="submit" 
             className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 mt-2"
             disabled={loading}
           >
-            {loading ? 'Saving...' : 'Save Profile Name'}
+            {loading ? 'Saving...' : 'Save Profile'}
           </button>
         </form>
 

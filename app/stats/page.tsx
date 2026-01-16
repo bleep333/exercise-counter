@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { getGuestExercises, hasGuestExercises, clearGuestExercises, type GuestExercise } from '@/lib/guest'
+import { calculateCalories } from '@/lib/calories'
 
 interface Exercise {
   id: string
@@ -14,7 +15,7 @@ interface Exercise {
   createdAt: string
 }
 
-type SortColumn = 'date' | 'exercise' | 'count' | 'duration'
+type SortColumn = 'date' | 'exercise' | 'count' | 'duration' | 'calories'
 type SortDirection = 'asc' | 'desc'
 type TabType = 'history' | 'trends'
 
@@ -22,6 +23,7 @@ export default function StatsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [exercises, setExercises] = useState<Exercise[]>([])
+  const [userWeight, setUserWeight] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showGuestPrompt, setShowGuestPrompt] = useState(false)
@@ -48,6 +50,7 @@ export default function StatsPage() {
         }
         const data = await response.json()
         setExercises(data.exercises || [])
+        setUserWeight(data.weight || null)
         // Check for guest exercises even when signed in (for migration after signup)
         setShowGuestPrompt(hasGuestExercises())
       } else {
@@ -60,6 +63,7 @@ export default function StatsPage() {
           completedAt: ex.completedAt,
           createdAt: ex.createdAt,
         })))
+        setUserWeight(null) // Guest users don't have weight
         setShowGuestPrompt(hasGuestExercises())
       }
       
@@ -181,13 +185,18 @@ export default function StatsPage() {
         case 'duration':
           comparison = a.duration - b.duration
           break
+        case 'calories':
+          const caloriesA = calculateCalories(a.exerciseType, a.duration, userWeight) || 0
+          const caloriesB = calculateCalories(b.exerciseType, b.duration, userWeight) || 0
+          comparison = caloriesA - caloriesB
+          break
       }
 
       return sortDirection === 'asc' ? comparison : -comparison
     })
 
     return filtered
-  }, [exercises, sortColumn, sortDirection, filterExerciseType, filterDateFrom, filterDateTo])
+  }, [exercises, sortColumn, sortDirection, filterExerciseType, filterDateFrom, filterDateTo, userWeight])
 
   // Calculate trends
   const trends = useMemo(() => {
@@ -418,6 +427,27 @@ export default function StatsPage() {
             </div>
 
             <div className="mt-8">
+              {session?.user && !userWeight && (
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">💡</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-blue-800 mb-1">
+                        Add Your Weight to See Calories Burned
+                      </p>
+                      <p className="text-xs text-blue-700 mb-3">
+                        Enter your weight in your account settings to see calorie estimates for each exercise session.
+                      </p>
+                      <button
+                        onClick={() => router.push('/account')}
+                        className="px-4 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Go to Account Settings
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               {filteredAndSortedExercises.length !== exercises.length && (
                 <div className="mb-4 text-sm text-gray-500">
                   Showing {filteredAndSortedExercises.length} of {exercises.length} exercises
@@ -442,10 +472,11 @@ export default function StatsPage() {
                     <div className="inline-block min-w-full align-middle">
                       <table className="min-w-full table-fixed">
                         <colgroup>
-                          <col className="w-[25%] sm:w-[30%]" />
-                          <col className="w-[35%] sm:w-[30%]" />
-                          <col className="w-[20%] sm:w-[20%]" />
-                          <col className="w-[20%] sm:w-[20%]" />
+                          <col className="w-[20%] sm:w-[25%]" />
+                          <col className="w-[25%] sm:w-[25%]" />
+                          <col className="w-[15%] sm:w-[15%]" />
+                          <col className="w-[15%] sm:w-[15%]" />
+                          <col className="w-[25%] sm:w-[20%]" />
                         </colgroup>
                         <thead className="bg-gray-50">
                           <tr>
@@ -501,31 +532,54 @@ export default function StatsPage() {
                                 )}
                               </div>
                             </th>
+                            <th
+                              onClick={() => handleSort('calories')}
+                              className="px-2 sm:px-4 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors select-none touch-manipulation"
+                            >
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                Calories
+                                {sortColumn === 'calories' && (
+                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {filteredAndSortedExercises.map((exercise) => (
-                            <tr
-                              key={exercise.id}
-                              className="hover:bg-purple-50 transition-colors"
-                            >
-                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900">
-                                <div className="flex items-center gap-1 sm:gap-2">
-                                  <span className="text-sm sm:text-base">{exercise.exerciseType === 'pushups' ? '💪' : '🏋️'}</span>
-                                  <span className="truncate">{exercise.exerciseType.charAt(0).toUpperCase() + exercise.exerciseType.slice(1)}</span>
-                                </div>
-                              </td>
-                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
-                                <span className="whitespace-nowrap">{formatDate(exercise.completedAt)}</span>
-                              </td>
-                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
-                                {exercise.count.toLocaleString()}
-                              </td>
-                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
-                                {formatDuration(exercise.duration)}
-                              </td>
-                            </tr>
-                          ))}
+                          {filteredAndSortedExercises.map((exercise) => {
+                            const calories = calculateCalories(exercise.exerciseType, exercise.duration, userWeight)
+                            return (
+                              <tr
+                                key={exercise.id}
+                                className="hover:bg-purple-50 transition-colors"
+                              >
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900">
+                                  <div className="flex items-center gap-1 sm:gap-2">
+                                    <span className="text-sm sm:text-base">{exercise.exerciseType === 'pushups' ? '💪' : '🏋️'}</span>
+                                    <span className="truncate">{exercise.exerciseType.charAt(0).toUpperCase() + exercise.exerciseType.slice(1)}</span>
+                                  </div>
+                                </td>
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
+                                  <span className="whitespace-nowrap">{formatDate(exercise.completedAt)}</span>
+                                </td>
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                  {exercise.count.toLocaleString()}
+                                </td>
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                  {formatDuration(exercise.duration)}
+                                </td>
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                  {calories !== null ? (
+                                    `${calories.toFixed(1)} kcal`
+                                  ) : (
+                                    <span className="text-gray-400 italic">Unavailable</span>
+                                  )}
+                                </td>
+                              </tr>
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>
