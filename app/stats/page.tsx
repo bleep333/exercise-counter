@@ -164,7 +164,7 @@ export default function StatsPage() {
               <div className="text-white">
                 <h3 className="text-xl sm:text-2xl font-bold mb-3">💾 Save Your Stats</h3>
                 <p className="text-base sm:text-lg mb-6 leading-relaxed opacity-95">
-                  You have {guestCount} exercise session{guestCount !== 1 ? 's' : ''} stored locally. 
+                  You have {guestCount} exercise session{guestCount !== 1 ? 's' : ''} not added to account. 
                   {session?.user 
                     ? ' Click below to migrate them to your account.' 
                     : ' Sign up to save them to your account and access them from any device.'}
