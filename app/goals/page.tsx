@@ -190,7 +190,7 @@ export default function GoalsPage() {
       })
     }
 
-    return history.reverse() // Show oldest first
+    return history // Show most recent first
   }
 
   const handleArchive = async (goalId: string, archive: boolean) => {
