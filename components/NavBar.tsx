@@ -15,10 +15,10 @@ export function NavBar() {
           <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent hover:scale-105 transition-transform">
             💪 Exercise Counter
           </Link>
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-1 sm:gap-4 md:gap-6 overflow-x-auto scrollbar-hide">
             <Link 
               href="/counter" 
-              className={`px-3 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all relative ${
+              className={`px-2 sm:px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base transition-all relative whitespace-nowrap ${
                 pathname === '/counter' 
                   ? 'text-purple-600 bg-purple-50' 
                   : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
@@ -31,7 +31,7 @@ export function NavBar() {
             </Link>
             <Link 
               href="/stats" 
-              className={`px-3 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all relative ${
+              className={`px-2 sm:px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base transition-all relative whitespace-nowrap ${
                 pathname === '/stats' 
                   ? 'text-purple-600 bg-purple-50' 
                   : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
@@ -44,7 +44,7 @@ export function NavBar() {
             </Link>
             <Link 
               href="/goals" 
-              className={`px-3 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all relative ${
+              className={`px-2 sm:px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base transition-all relative whitespace-nowrap ${
                 pathname === '/goals' 
                   ? 'text-purple-600 bg-purple-50' 
                   : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
@@ -57,7 +57,7 @@ export function NavBar() {
             </Link>
             <Link 
               href="/leaderboard" 
-              className={`px-3 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all relative ${
+              className={`px-2 sm:px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base transition-all relative whitespace-nowrap ${
                 pathname === '/leaderboard' 
                   ? 'text-purple-600 bg-purple-50' 
                   : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'

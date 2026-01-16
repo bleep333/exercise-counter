@@ -438,95 +438,97 @@ export default function StatsPage() {
                 </div>
               ) : (
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full table-fixed">
-                      <colgroup>
-                        <col className="w-[30%]" />
-                        <col className="w-[30%]" />
-                        <col className="w-[20%]" />
-                        <col className="w-[20%]" />
-                      </colgroup>
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th
-                            onClick={() => handleSort('exercise')}
-                            className="px-4 py-4 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                          >
-                            <div className="flex items-center gap-2">
-                              Exercise
-                              {sortColumn === 'exercise' && (
-                                <span className="text-purple-600">
-                                  {sortDirection === 'asc' ? '↑' : '↓'}
-                                </span>
-                              )}
-                            </div>
-                          </th>
-                          <th
-                            onClick={() => handleSort('date')}
-                            className="px-4 py-4 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                          >
-                            <div className="flex items-center gap-2">
-                              Date
-                              {sortColumn === 'date' && (
-                                <span className="text-purple-600">
-                                  {sortDirection === 'asc' ? '↑' : '↓'}
-                                </span>
-                              )}
-                            </div>
-                          </th>
-                          <th
-                            onClick={() => handleSort('count')}
-                            className="px-4 py-4 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                          >
-                            <div className="flex items-center gap-2">
-                              Reps
-                              {sortColumn === 'count' && (
-                                <span className="text-purple-600">
-                                  {sortDirection === 'asc' ? '↑' : '↓'}
-                                </span>
-                              )}
-                            </div>
-                          </th>
-                          <th
-                            onClick={() => handleSort('duration')}
-                            className="px-4 py-4 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                          >
-                            <div className="flex items-center gap-2">
-                              Duration
-                              {sortColumn === 'duration' && (
-                                <span className="text-purple-600">
-                                  {sortDirection === 'asc' ? '↑' : '↓'}
-                                </span>
-                              )}
-                            </div>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {filteredAndSortedExercises.map((exercise) => (
-                          <tr
-                            key={exercise.id}
-                            className="hover:bg-purple-50 transition-colors"
-                          >
-                            <td className="px-4 py-4 text-sm font-medium text-gray-900">
-                              <div className="flex items-center gap-2">
-                                <span>{exercise.exerciseType === 'pushups' ? '💪' : '🏋️'}</span>
-                                <span>{exercise.exerciseType.charAt(0).toUpperCase() + exercise.exerciseType.slice(1)}</span>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="inline-block min-w-full align-middle">
+                      <table className="min-w-full table-fixed">
+                        <colgroup>
+                          <col className="w-[25%] sm:w-[30%]" />
+                          <col className="w-[35%] sm:w-[30%]" />
+                          <col className="w-[20%] sm:w-[20%]" />
+                          <col className="w-[20%] sm:w-[20%]" />
+                        </colgroup>
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th
+                              onClick={() => handleSort('exercise')}
+                              className="px-2 sm:px-4 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors select-none touch-manipulation"
+                            >
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                Exercise
+                                {sortColumn === 'exercise' && (
+                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
                               </div>
-                            </td>
-                            <td className="px-4 py-4 text-sm text-gray-600">
-                              {formatDate(exercise.completedAt)}
-                            </td>
-                            <td className="px-4 py-4 text-sm font-semibold text-purple-600 whitespace-nowrap">
-                              {exercise.count.toLocaleString()}
-                            </td>
-                            <td className="px-4 py-4 text-sm font-semibold text-purple-600 whitespace-nowrap">
-                              {formatDuration(exercise.duration)}
-                            </td>
+                            </th>
+                            <th
+                              onClick={() => handleSort('date')}
+                              className="px-2 sm:px-4 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors select-none touch-manipulation"
+                            >
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                Date
+                                {sortColumn === 'date' && (
+                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              onClick={() => handleSort('count')}
+                              className="px-2 sm:px-4 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors select-none touch-manipulation"
+                            >
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                Reps
+                                {sortColumn === 'count' && (
+                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th
+                              onClick={() => handleSort('duration')}
+                              className="px-2 sm:px-4 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors select-none touch-manipulation"
+                            >
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                Duration
+                                {sortColumn === 'duration' && (
+                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {filteredAndSortedExercises.map((exercise) => (
+                            <tr
+                              key={exercise.id}
+                              className="hover:bg-purple-50 transition-colors"
+                            >
+                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900">
+                                <div className="flex items-center gap-1 sm:gap-2">
+                                  <span className="text-sm sm:text-base">{exercise.exerciseType === 'pushups' ? '💪' : '🏋️'}</span>
+                                  <span className="truncate">{exercise.exerciseType.charAt(0).toUpperCase() + exercise.exerciseType.slice(1)}</span>
+                                </div>
+                              </td>
+                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
+                                <span className="whitespace-nowrap">{formatDate(exercise.completedAt)}</span>
+                              </td>
+                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                {exercise.count.toLocaleString()}
+                              </td>
+                              <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                {formatDuration(exercise.duration)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}
