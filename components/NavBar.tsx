@@ -69,27 +69,28 @@ export function NavBar() {
               )}
             </Link>
             {session?.user ? (
-              <div className="flex items-center gap-3 ml-2 pl-3 border-l border-gray-200">
-                <span className="text-sm text-gray-600 font-medium hidden sm:inline">
-                  {session.user.name || session.user.email}
-                </span>
-                <Link
-                  href="/account"
-                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
-                    pathname === '/account'
-                      ? 'text-purple-600 bg-purple-100'
-                      : 'text-purple-600 bg-purple-50 hover:bg-purple-100'
-                  }`}
-                >
-                  Account
-                </Link>
-                <button 
-                  onClick={() => signOut()} 
-                  className="px-3 py-1.5 text-sm font-semibold text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </div>
+              <Link
+                href="/account"
+                className={`ml-2 pl-3 border-l border-gray-200 transition-all ${
+                  pathname === '/account'
+                    ? 'ring-2 ring-purple-600'
+                    : 'hover:opacity-80'
+                }`}
+              >
+                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2 border-gray-200 hover:border-purple-400 transition-colors">
+                  {session.user.image ? (
+                    <img 
+                      src={session.user.image} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  )}
+                </div>
+              </Link>
             ) : (
               <Link 
                 href="/auth/signin" 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 export default function AccountPage() {
@@ -191,9 +191,15 @@ export default function AccountPage() {
         </form>
 
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center">
+          <p className="text-sm text-gray-600 text-center mb-4">
             Email: <span className="font-medium">{session.user.email}</span>
           </p>
+          <button
+            onClick={() => signOut()}
+            className="w-full px-6 py-3 text-red-600 bg-red-50 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:shadow-lg hover:bg-red-100 transition-all"
+          >
+            Sign Out
+          </button>
         </div>
       </div>
     </div>
