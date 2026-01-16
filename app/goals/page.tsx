@@ -565,7 +565,7 @@ export default function GoalsPage() {
               const progress = calculateProgress(goal)
               const streak = calculateStreak(goal)
               const timeUntilStart = calculateTimeUntilStart(goal)
-              const periodLabel = goal.period === 'day' ? 'Today' : goal.period === 'week' ? 'This Week' : 'This Month'
+              const periodLabel = goal.period === 'day' ? 'Daily' : goal.period === 'week' ? 'Weekly' : 'Monthly'
               const periodSingular = goal.period === 'day' ? 'day' : goal.period === 'week' ? 'week' : 'month'
               
               return (
@@ -580,7 +580,7 @@ export default function GoalsPage() {
                         {goal.exerciseType.charAt(0).toUpperCase() + goal.exerciseType.slice(1)}
                       </h3>
                       <p className="text-sm text-gray-600">
-                        {periodLabel} • Target: {goal.targetCount.toLocaleString()} reps
+                        {periodLabel} target: {goal.targetCount.toLocaleString()} reps
                       </p>
                       {!timeUntilStart.hasStarted && (
                         <p className="text-sm text-blue-600 font-semibold mt-1">
