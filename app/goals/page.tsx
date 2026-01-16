@@ -84,6 +84,11 @@ export default function GoalsPage() {
     const goalStartDate = new Date(goal.startDate)
     goalStartDate.setHours(0, 0, 0, 0)
     
+    // If goal hasn't started yet, return 0
+    if (goalStartDate > now) {
+      return 0
+    }
+    
     let streak = 0
     let checkDate = new Date(now)
     let foundIncomplete = false
@@ -228,27 +233,68 @@ export default function GoalsPage() {
     }
   }
 
+  const calculateTimeUntilStart = (goal: Goal): { days: number; weeks: number; months: number; hasStarted: boolean } => {
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    const goalStartDate = new Date(goal.startDate)
+    goalStartDate.setHours(0, 0, 0, 0)
+    
+    if (goalStartDate <= now) {
+      return { days: 0, weeks: 0, months: 0, hasStarted: true }
+    }
+
+    const diffTime = goalStartDate.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    // Calculate months difference
+    const yearDiff = goalStartDate.getFullYear() - now.getFullYear()
+    const monthDiff = goalStartDate.getMonth() - now.getMonth()
+    const totalMonths = yearDiff * 12 + monthDiff
+    const adjustedMonths = goalStartDate.getDate() < now.getDate() ? totalMonths - 1 : totalMonths
+    
+    // Calculate weeks (only if >= 7 days)
+    const diffWeeks = diffDays >= 7 ? Math.floor(diffDays / 7) : 0
+
+    return {
+      days: diffDays,
+      weeks: diffWeeks,
+      months: Math.max(0, adjustedMonths),
+      hasStarted: false,
+    }
+  }
+
   const calculateProgress = (goal: Goal): { current: number; percentage: number } => {
     const now = new Date()
-    let startDate: Date
+    const goalStartDate = new Date(goal.startDate)
+    goalStartDate.setHours(0, 0, 0, 0)
+    
+    // If goal hasn't started yet, return 0 progress
+    if (goalStartDate > now) {
+      return { current: 0, percentage: 0 }
+    }
+
+    let periodStart: Date
 
     switch (goal.period) {
       case 'day':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         break
       case 'week':
-        startDate = new Date(now)
-        startDate.setDate(startDate.getDate() - startDate.getDay()) // Start of week (Sunday)
-        startDate.setHours(0, 0, 0, 0)
+        periodStart = new Date(now)
+        periodStart.setDate(periodStart.getDate() - periodStart.getDay()) // Start of week (Sunday)
+        periodStart.setHours(0, 0, 0, 0)
         break
       case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+        periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
         break
     }
 
+    // Ensure we don't count exercises before the goal start date
+    const effectiveStartDate = periodStart > goalStartDate ? periodStart : goalStartDate
+
     const relevantExercises = exercises.filter(
       ex => ex.exerciseType === goal.exerciseType &&
-      new Date(ex.completedAt) >= startDate
+      new Date(ex.completedAt) >= effectiveStartDate
     )
 
     const current = relevantExercises.reduce((sum, ex) => sum + ex.count, 0)
@@ -479,7 +525,7 @@ export default function GoalsPage() {
                   required
                 />
                 <p className="text-xs text-gray-500">
-                  The goal will only track progress from this date onwards
+                  The goal will only track progress from this date onwards. You can set a future date to schedule the goal.
                 </p>
               </div>
 
@@ -518,6 +564,7 @@ export default function GoalsPage() {
             {filteredGoals.map((goal) => {
               const progress = calculateProgress(goal)
               const streak = calculateStreak(goal)
+              const timeUntilStart = calculateTimeUntilStart(goal)
               const periodLabel = goal.period === 'day' ? 'Today' : goal.period === 'week' ? 'This Week' : 'This Month'
               const periodSingular = goal.period === 'day' ? 'day' : goal.period === 'week' ? 'week' : 'month'
               
@@ -535,7 +582,16 @@ export default function GoalsPage() {
                       <p className="text-sm text-gray-600">
                         {periodLabel} • Target: {goal.targetCount.toLocaleString()} reps
                       </p>
-                      {streak > 0 && (
+                      {!timeUntilStart.hasStarted && (
+                        <p className="text-sm text-blue-600 font-semibold mt-1">
+                          {timeUntilStart.months > 0 
+                            ? `⏰ ${timeUntilStart.months} ${timeUntilStart.months === 1 ? 'month' : 'months'} to start`
+                            : timeUntilStart.days >= 7
+                            ? `⏰ ${timeUntilStart.weeks} ${timeUntilStart.weeks === 1 ? 'week' : 'weeks'} to start`
+                            : `⏰ ${timeUntilStart.days} ${timeUntilStart.days === 1 ? 'day' : 'days'} to start`}
+                        </p>
+                      )}
+                      {timeUntilStart.hasStarted && streak > 0 && (
                         <p className="text-sm text-purple-600 font-semibold mt-1">
                           🔥 {streak} {periodSingular} streak
                         </p>
@@ -565,38 +621,51 @@ export default function GoalsPage() {
                     </div>
                   </div>
 
-                  <div className="mb-2">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-semibold text-gray-700">Progress</span>
-                      <span className="text-sm font-bold text-purple-600">
-                        {progress.current.toLocaleString()} / {goal.targetCount.toLocaleString()} reps
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          progress.percentage >= 100
-                            ? 'bg-gradient-to-r from-green-500 to-green-600'
-                            : progress.percentage >= 75
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-600'
-                            : progress.percentage >= 50
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-600'
-                            : 'bg-gradient-to-r from-yellow-400 to-orange-500'
-                        }`}
-                        style={{ width: `${progress.percentage}%` }}
-                      />
-                    </div>
-                  </div>
+                  {timeUntilStart.hasStarted ? (
+                    <>
+                      <div className="mb-2">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-semibold text-gray-700">Progress</span>
+                          <span className="text-sm font-bold text-purple-600">
+                            {progress.current.toLocaleString()} / {goal.targetCount.toLocaleString()} reps
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              progress.percentage >= 100
+                                ? 'bg-gradient-to-r from-green-500 to-green-600'
+                                : progress.percentage >= 75
+                                ? 'bg-gradient-to-r from-purple-600 to-pink-600'
+                                : progress.percentage >= 50
+                                ? 'bg-gradient-to-r from-blue-500 to-purple-600'
+                                : 'bg-gradient-to-r from-yellow-400 to-orange-500'
+                            }`}
+                            style={{ width: `${progress.percentage}%` }}
+                          />
+                        </div>
+                      </div>
 
-                  <div className="text-sm text-gray-600 mt-2">
-                    {progress.percentage >= 100 ? (
-                      <span className="text-green-600 font-semibold">🎉 Goal achieved!</span>
-                    ) : (
-                      <span>
-                        {Math.ceil(goal.targetCount - progress.current).toLocaleString()} reps remaining
-                      </span>
-                    )}
-                  </div>
+                      <div className="text-sm text-gray-600 mt-2">
+                        {progress.percentage >= 100 ? (
+                          <span className="text-green-600 font-semibold">🎉 Goal achieved!</span>
+                        ) : (
+                          <span>
+                            {Math.ceil(goal.targetCount - progress.current).toLocaleString()} reps remaining
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="mb-2">
+                      <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                        <div className="h-full rounded-full bg-gray-300" style={{ width: '0%' }} />
+                      </div>
+                      <div className="text-sm text-gray-500 mt-2 text-center">
+                        Goal starts on {new Date(goal.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -629,21 +698,60 @@ export default function GoalsPage() {
                 <p className="text-sm text-gray-600">
                   Target: {selectedGoal.targetCount.toLocaleString()} reps per {selectedGoal.period === 'day' ? 'day' : selectedGoal.period === 'week' ? 'week' : 'month'}
                 </p>
-                {calculateStreak(selectedGoal) > 0 && (
-                  <p className="text-sm text-purple-600 font-semibold mt-1">
-                    🔥 Current streak: {calculateStreak(selectedGoal)} {selectedGoal.period === 'day' ? 'day' : selectedGoal.period === 'week' ? 'week' : 'month'}(s)
-                  </p>
-                )}
+                {(() => {
+                  const timeUntilStart = calculateTimeUntilStart(selectedGoal)
+                  if (!timeUntilStart.hasStarted) {
+                    return (
+                      <p className="text-sm text-blue-600 font-semibold mt-1">
+                        {timeUntilStart.months > 0 
+                          ? `⏰ ${timeUntilStart.months} ${timeUntilStart.months === 1 ? 'month' : 'months'} to start`
+                          : timeUntilStart.days >= 7
+                          ? `⏰ ${timeUntilStart.weeks} ${timeUntilStart.weeks === 1 ? 'week' : 'weeks'} to start`
+                          : `⏰ ${timeUntilStart.days} ${timeUntilStart.days === 1 ? 'day' : 'days'} to start`}
+                      </p>
+                    )
+                  }
+                  const streak = calculateStreak(selectedGoal)
+                  if (streak > 0) {
+                    return (
+                      <p className="text-sm text-purple-600 font-semibold mt-1">
+                        🔥 Current streak: {streak} {selectedGoal.period === 'day' ? 'day' : selectedGoal.period === 'week' ? 'week' : 'month'}(s)
+                      </p>
+                    )
+                  }
+                  return null
+                })()}
               </div>
 
-              <div className="space-y-2">
-                <div className="grid grid-cols-4 gap-2 font-semibold text-sm text-gray-700 pb-2 border-b">
-                  <div>Period</div>
-                  <div className="text-center">Status</div>
-                  <div className="text-center">Reps</div>
-                  <div className="text-center">Target</div>
-                </div>
-                {getGoalHistory(selectedGoal).map((entry, index) => (
+              {(() => {
+                const timeUntilStart = calculateTimeUntilStart(selectedGoal)
+                if (!timeUntilStart.hasStarted) {
+                  return (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-lg font-semibold mb-2">Goal hasn't started yet</p>
+                      <p className="text-sm">
+                        This goal will begin tracking on {new Date(selectedGoal.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+                  )
+                }
+                const history = getGoalHistory(selectedGoal)
+                if (history.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No history available yet</p>
+                    </div>
+                  )
+                }
+                return (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-4 gap-2 font-semibold text-sm text-gray-700 pb-2 border-b">
+                      <div>Period</div>
+                      <div className="text-center">Status</div>
+                      <div className="text-center">Reps</div>
+                      <div className="text-center">Target</div>
+                    </div>
+                    {history.map((entry, index) => (
                   <div 
                     key={index} 
                     className={`grid grid-cols-4 gap-2 text-sm py-2 rounded ${
@@ -659,10 +767,12 @@ export default function GoalsPage() {
                       )}
                     </div>
                     <div className="text-center font-semibold">{entry.count.toLocaleString()}</div>
-                    <div className="text-center text-gray-600">{entry.target.toLocaleString()}</div>
+                    <div className="text-center text-gray-600">{entry.target.toLocaleString()}                    </div>
                   </div>
-                ))}
-              </div>
+                    ))}
+                  </div>
+                )
+              })()}
             </div>
           </div>
         )}
