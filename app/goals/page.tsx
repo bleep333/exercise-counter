@@ -9,6 +9,7 @@ interface Goal {
   exerciseType: string
   targetCount: number
   period: 'day' | 'week' | 'month'
+  startDate: string
   archived: boolean
   createdAt: string
   updatedAt: string
@@ -40,6 +41,7 @@ export default function GoalsPage() {
     exerciseType: 'pushups',
     targetCount: 100,
     period: 'week' as 'day' | 'week' | 'month',
+    startDate: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
   })
 
   useEffect(() => {
@@ -79,11 +81,14 @@ export default function GoalsPage() {
 
   const calculateStreak = (goal: Goal): number => {
     const now = new Date()
+    const goalStartDate = new Date(goal.startDate)
+    goalStartDate.setHours(0, 0, 0, 0)
+    
     let streak = 0
     let checkDate = new Date(now)
     let foundIncomplete = false
 
-    // Check periods going backwards until we find an incomplete one
+    // Check periods going backwards until we find an incomplete one or reach startDate
     while (!foundIncomplete) {
       let periodStart: Date
       let periodEnd: Date
@@ -105,6 +110,11 @@ export default function GoalsPage() {
           periodStart = new Date(checkDate.getFullYear(), checkDate.getMonth(), 1)
           periodEnd = new Date(checkDate.getFullYear(), checkDate.getMonth() + 1, 1)
           break
+      }
+
+      // Stop if we've gone before the goal start date
+      if (periodStart < goalStartDate) {
+        break
       }
 
       const periodExercises = exercises.filter(
@@ -139,6 +149,8 @@ export default function GoalsPage() {
 
   const getGoalHistory = (goal: Goal, periodsToShow: number = 10) => {
     const now = new Date()
+    const goalStartDate = new Date(goal.startDate)
+    goalStartDate.setHours(0, 0, 0, 0)
     const history: Array<{ period: string; completed: boolean; count: number; target: number }> = []
 
     for (let i = 0; i < periodsToShow; i++) {
@@ -171,6 +183,11 @@ export default function GoalsPage() {
           periodEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1)
           periodLabel = periodStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
           break
+      }
+
+      // Skip periods before the goal start date
+      if (periodStart < goalStartDate) {
+        continue
       }
 
       const periodExercises = exercises.filter(
@@ -264,6 +281,7 @@ export default function GoalsPage() {
         exerciseType: 'pushups',
         targetCount: 100,
         period: 'week',
+        startDate: new Date().toISOString().split('T')[0],
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save goal')
@@ -292,10 +310,12 @@ export default function GoalsPage() {
 
   const handleEdit = (goal: Goal) => {
     setEditingGoal(goal)
+    const startDateStr = goal.startDate ? new Date(goal.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     setFormData({
       exerciseType: goal.exerciseType,
       targetCount: goal.targetCount,
       period: goal.period,
+      startDate: startDateStr,
     })
     setShowAddForm(true)
   }
@@ -382,6 +402,7 @@ export default function GoalsPage() {
                     exerciseType: 'pushups',
                     targetCount: 100,
                     period: 'week',
+                    startDate: new Date().toISOString().split('T')[0],
                   })
                 }}
                 className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
@@ -446,6 +467,20 @@ export default function GoalsPage() {
                   className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
                   required
                 />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">Start Date</label>
+                <input
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                  required
+                />
+                <p className="text-xs text-gray-500">
+                  The goal will only track progress from this date onwards
+                </p>
               </div>
 
               <button

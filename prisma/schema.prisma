@@ -43,16 +43,16 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  password      String?   // For credentials provider
+  password      String? // For credentials provider
   profileName   String?   @unique // Public profile name for leaderboard
-  weight        Float?    // Weight in kg for calories calculation
+  weight        Float? // Weight in kg for calories calculation
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
+  accounts  Account[]
+  sessions  Session[]
   exercises Exercise[]
-  goals Goal[]
+  goals     Goal[]
 }
 
 model VerificationToken {
@@ -65,13 +65,13 @@ model VerificationToken {
 
 // Exercise tracking model
 model Exercise {
-  id          String   @id @default(cuid())
-  userId      String?  // null for guest users (stored in localStorage)
+  id           String   @id @default(cuid())
+  userId       String? // null for guest users (stored in localStorage)
   exerciseType String
-  count       Int
-  duration    Int      // in milliseconds
-  completedAt DateTime
-  createdAt   DateTime @default(now())
+  count        Int
+  duration     Int // in milliseconds
+  completedAt  DateTime
+  createdAt    DateTime @default(now())
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -81,18 +81,19 @@ model Exercise {
 
 // Goal tracking model
 model Goal {
-  id          String   @id @default(cuid())
-  userId      String
+  id           String   @id @default(cuid())
+  userId       String
   exerciseType String
-  targetCount Int
-  period      String  // 'day', 'week', or 'month'
-  archived    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  targetCount  Int
+  period       String // 'day', 'week', or 'month'
+  startDate    DateTime @default(now()) // When the goal tracking should start
+  archived     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, exerciseType, period])
   @@index([userId])
   @@index([archived])
-  @@unique([userId, exerciseType, period])
 }

@@ -71,12 +71,18 @@ async function main() {
   })
 
   if (!existingGoal) {
+    // Set start date to 8 weeks ago to match the test data
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - (8 * 7))
+    startDate.setHours(0, 0, 0, 0)
+    
     const goal = await prisma.goal.create({
       data: {
         userId: user.id,
         exerciseType: 'pushups',
         targetCount: 40,
         period: 'week',
+        startDate: startDate,
       },
     })
     console.log('✅ Created weekly pushup goal: 40 pushups per week')

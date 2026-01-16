@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { exerciseType, targetCount, period } = body
+    const { exerciseType, targetCount, period, startDate } = body
 
     if (!exerciseType || targetCount === undefined || !period) {
       return NextResponse.json(
@@ -86,11 +86,56 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Parse startDate if provided, otherwise use current date
+    let parsedStartDate = new Date()
+    parsedStartDate.setHours(0, 0, 0, 0) // Normalize to start of day
+    
+    if (startDate) {
+      // Parse the date string (expected format: YYYY-MM-DD)
+      const dateParts = startDate.split('T')[0].split('-')
+      if (dateParts.length === 3) {
+        const year = parseInt(dateParts[0], 10)
+        const month = parseInt(dateParts[1], 10) - 1 // Month is 0-indexed
+        const day = parseInt(dateParts[2], 10)
+        
+        if (isNaN(year) || isNaN(month) || isNaN(day)) {
+          return NextResponse.json(
+            { error: 'Invalid startDate format. Expected YYYY-MM-DD' },
+            { status: 400 }
+          )
+        }
+        
+        parsedStartDate = new Date(year, month, day)
+        parsedStartDate.setHours(0, 0, 0, 0) // Normalize to start of day
+        
+        if (isNaN(parsedStartDate.getTime())) {
+          return NextResponse.json(
+            { error: 'Invalid startDate: date is out of range' },
+            { status: 400 }
+          )
+        }
+      } else {
+        // Fallback to Date constructor if format is different
+        parsedStartDate = new Date(startDate)
+        if (isNaN(parsedStartDate.getTime())) {
+          return NextResponse.json(
+            { error: 'Invalid startDate format. Expected YYYY-MM-DD' },
+            { status: 400 }
+          )
+        }
+        parsedStartDate.setHours(0, 0, 0, 0) // Normalize to start of day
+      }
+    }
+
     if (existingGoal) {
       // Update existing goal
+      const updateData: any = { targetCount }
+      if (startDate) {
+        updateData.startDate = parsedStartDate
+      }
       const goal = await prisma.goal.update({
         where: { id: existingGoal.id },
-        data: { targetCount },
+        data: updateData,
       })
       return NextResponse.json({ goal })
     }
@@ -102,14 +147,16 @@ export async function POST(request: NextRequest) {
         exerciseType,
         targetCount,
         period,
+        startDate: parsedStartDate,
       },
     })
 
     return NextResponse.json({ goal })
   } catch (error) {
     console.error('Error creating/updating goal:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create/update goal'
     return NextResponse.json(
-      { error: 'Failed to create/update goal' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
