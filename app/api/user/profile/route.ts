@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         email: true,
         name: true,
         weight: true,
+        leaderboardVisible: true,
       },
     })
 
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       profileName: user.profileName,
       weight: user.weight,
+      leaderboardVisible: user.leaderboardVisible,
     })
   } catch (error) {
     console.error('Error fetching profile:', error)
@@ -56,9 +58,9 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { profileName, weight } = body
+    const { profileName, weight, leaderboardVisible } = body
 
-    const updateData: { profileName?: string; weight?: number } = {}
+    const updateData: { profileName?: string; weight?: number | null; leaderboardVisible?: boolean } = {}
 
     // Handle profile name update
     if (profileName !== undefined) {
@@ -125,6 +127,17 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Handle leaderboard visibility update
+    if (leaderboardVisible !== undefined) {
+      if (typeof leaderboardVisible !== 'boolean') {
+        return NextResponse.json(
+          { error: 'Leaderboard visibility must be a boolean' },
+          { status: 400 }
+        )
+      }
+      updateData.leaderboardVisible = leaderboardVisible
+    }
+
     // Update user profile
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
@@ -132,12 +145,14 @@ export async function PUT(request: NextRequest) {
       select: {
         profileName: true,
         weight: true,
+        leaderboardVisible: true,
       },
     })
 
     return NextResponse.json({ 
       profileName: updatedUser.profileName,
       weight: updatedUser.weight,
+      leaderboardVisible: updatedUser.leaderboardVisible,
     })
   } catch (error) {
     console.error('Error updating profile:', error)

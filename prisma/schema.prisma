@@ -38,16 +38,17 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String? // For credentials provider
-  profileName   String?   @unique // Public profile name for leaderboard
-  weight        Float? // Weight in kg for calories calculation
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  name              String?
+  email             String?   @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String? // For credentials provider
+  profileName       String?   @unique // Public profile name for leaderboard
+  weight            Float? // Weight in kg for calories calculation
+  leaderboardVisible Boolean  @default(true) // Whether to show on leaderboard
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   accounts  Account[]
   sessions  Session[]

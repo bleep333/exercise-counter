@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
         user: {
           select: {
             profileName: true,
+            leaderboardVisible: true,
           },
         },
       },
@@ -41,6 +42,9 @@ export async function GET(request: NextRequest) {
 
     exercises.forEach((exercise) => {
       if (!exercise.userId || !exercise.user) return
+      
+      // Only include users who have leaderboard visibility enabled
+      if (!exercise.user.leaderboardVisible) return
 
       const existing = userStats.get(exercise.userId) || {
         profileName: exercise.user.profileName,
