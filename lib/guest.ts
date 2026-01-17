@@ -69,3 +69,13 @@ export function deleteGuestExercise(exerciseId: string): void {
   const filtered = exercises.filter(ex => ex.id !== exerciseId)
   localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(filtered))
 }
+
+export function updateGuestExercise(exerciseId: string, count: number): void {
+  if (typeof window === 'undefined') return
+  
+  const exercises = getGuestExercises()
+  const updated = exercises.map(ex => 
+    ex.id === exerciseId ? { ...ex, count } : ex
+  )
+  localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(updated))
+}

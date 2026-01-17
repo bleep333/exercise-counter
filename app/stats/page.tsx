@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { getGuestExercises, hasGuestExercises, clearGuestExercises, deleteGuestExercise, type GuestExercise } from '@/lib/guest'
+import { getGuestExercises, hasGuestExercises, clearGuestExercises, deleteGuestExercise, updateGuestExercise, type GuestExercise } from '@/lib/guest'
 import { calculateCalories } from '@/lib/calories'
 
 interface Exercise {
@@ -37,6 +37,8 @@ export default function StatsPage() {
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
+  const [editingRepId, setEditingRepId] = useState<string | null>(null)
+  const [editingRepValue, setEditingRepValue] = useState<string>('')
 
   useEffect(() => {
     fetchExercises()
@@ -184,6 +186,65 @@ export default function StatsPage() {
     }
   }
 
+  const handleRepEditClick = (exerciseId: string, currentCount: number) => {
+    setEditingRepId(exerciseId)
+    setEditingRepValue(currentCount.toString())
+  }
+
+  const handleRepEditCancel = () => {
+    setEditingRepId(null)
+    setEditingRepValue('')
+  }
+
+  const handleRepEditSave = async (exerciseId: string) => {
+    const newCount = parseInt(editingRepValue, 10)
+    
+    if (isNaN(newCount) || newCount < 0) {
+      alert('Please enter a valid non-negative number')
+      return
+    }
+
+    try {
+      if (session?.user) {
+        // Update in database
+        const response = await fetch(`/api/exercises?id=${exerciseId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count: newCount }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to update exercise')
+        }
+
+        const updatedExercise = await response.json()
+        
+        // Update local state
+        setExercises(prev => prev.map(ex => 
+          ex.id === exerciseId 
+            ? { ...ex, count: updatedExercise.count }
+            : ex
+        ))
+      } else {
+        // Update in localStorage for guest users
+        updateGuestExercise(exerciseId, newCount)
+        
+        // Update local state
+        setExercises(prev => prev.map(ex => 
+          ex.id === exerciseId 
+            ? { ...ex, count: newCount }
+            : ex
+        ))
+      }
+
+      setEditingRepId(null)
+      setEditingRepValue('')
+    } catch (err) {
+      console.error('Error updating rep count:', err)
+      alert('Failed to update rep count. Please try again.')
+    }
+  }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleString('en-US', {
@@ -259,8 +320,8 @@ export default function StatsPage() {
           comparison = a.duration - b.duration
           break
         case 'calories':
-          const caloriesA = calculateCalories(a.exerciseType, a.duration, userWeight) || 0
-          const caloriesB = calculateCalories(b.exerciseType, b.duration, userWeight) || 0
+          const caloriesA = calculateCalories(a.exerciseType, a.count, userWeight) || 0
+          const caloriesB = calculateCalories(b.exerciseType, b.count, userWeight) || 0
           comparison = caloriesA - caloriesB
           break
       }
@@ -654,7 +715,7 @@ export default function StatsPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {filteredAndSortedExercises.map((exercise) => {
-                            const calories = calculateCalories(exercise.exerciseType, exercise.duration, userWeight)
+                            const calories = calculateCalories(exercise.exerciseType, exercise.count, userWeight)
                             const isDeleting = deletingIds.has(exercise.id)
                             return (
                               <tr
@@ -671,7 +732,47 @@ export default function StatsPage() {
                                   <span className="whitespace-nowrap">{formatDate(exercise.completedAt)}</span>
                                 </td>
                                 <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
-                                  {exercise.count.toLocaleString()}
+                                  {editingRepId === exercise.id ? (
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        value={editingRepValue}
+                                        onChange={(e) => setEditingRepValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            handleRepEditSave(exercise.id)
+                                          } else if (e.key === 'Escape') {
+                                            handleRepEditCancel()
+                                          }
+                                        }}
+                                        className="w-20 px-2 py-1 border-2 border-purple-300 rounded focus:outline-none focus:border-purple-600 text-sm"
+                                        min="0"
+                                        autoFocus
+                                      />
+                                      <button
+                                        onClick={() => handleRepEditSave(exercise.id)}
+                                        className="text-green-600 hover:text-green-700 font-semibold text-base px-1 py-1 rounded hover:bg-green-50 transition-colors leading-none"
+                                        title="Save"
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={handleRepEditCancel}
+                                        className="text-gray-600 hover:text-gray-700 font-semibold text-base px-1 py-1 rounded hover:bg-gray-50 transition-colors leading-none"
+                                        title="Cancel"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleRepEditClick(exercise.id, exercise.count)}
+                                      className="hover:bg-purple-50 px-2 py-1 rounded transition-colors cursor-pointer"
+                                      title="Click to edit rep count"
+                                    >
+                                      {exercise.count.toLocaleString()}
+                                    </button>
+                                  )}
                                 </td>
                                 <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
                                   {formatDuration(exercise.duration)}

@@ -86,6 +86,84 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const { searchParams } = new URL(request.url)
+    const exerciseId = searchParams.get('id')
+
+    if (!exerciseId) {
+      return NextResponse.json(
+        { error: 'Exercise ID is required' },
+        { status: 400 }
+      )
+    }
+
+    const body = await request.json()
+    const { count } = body
+
+    if (count === undefined || count === null) {
+      return NextResponse.json(
+        { error: 'Count is required' },
+        { status: 400 }
+      )
+    }
+
+    if (typeof count !== 'number' || count < 0) {
+      return NextResponse.json(
+        { error: 'Count must be a non-negative number' },
+        { status: 400 }
+      )
+    }
+
+    // Verify the exercise belongs to the user
+    const exercise = await prisma.exercise.findUnique({
+      where: { id: exerciseId },
+    })
+
+    if (!exercise) {
+      return NextResponse.json(
+        { error: 'Exercise not found' },
+        { status: 404 }
+      )
+    }
+
+    if (exercise.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      )
+    }
+
+    const updatedExercise = await prisma.exercise.update({
+      where: { id: exerciseId },
+      data: { count },
+    })
+
+    return NextResponse.json({
+      id: updatedExercise.id,
+      exerciseType: updatedExercise.exerciseType,
+      count: updatedExercise.count,
+      duration: updatedExercise.duration,
+      completedAt: updatedExercise.completedAt.toISOString(),
+    })
+  } catch (error) {
+    console.error('Error updating exercise:', error)
+    return NextResponse.json(
+      { error: 'Failed to update exercise' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
