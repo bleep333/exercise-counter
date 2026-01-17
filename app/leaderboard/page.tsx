@@ -10,8 +10,8 @@ interface LeaderboardEntry {
 
 function LeaderboardContent() {
   const searchParams = useSearchParams()
-  const [period, setPeriod] = useState<'today' | '30days'>(
-    (searchParams.get('period') as 'today' | '30days') || '30days'
+  const [period, setPeriod] = useState<'today' | '7days' | '30days'>(
+    (searchParams.get('period') as 'today' | '7days' | '30days') || '30days'
   )
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,6 +64,16 @@ function LeaderboardContent() {
               }`}
             >
               Today
+            </button>
+            <button
+              onClick={() => setPeriod('7days')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                period === '7days'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Past 7 Days
             </button>
             <button
               onClick={() => setPeriod('30days')}

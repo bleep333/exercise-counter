@@ -4,13 +4,16 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || '30days' // 'today' or '30days'
+    const period = searchParams.get('period') || '30days' // 'today', '7days', or '30days'
     const exerciseType = searchParams.get('exerciseType') || 'pushups'
 
     const now = new Date()
     const startDate = new Date()
 
     if (period === 'today') {
+      startDate.setHours(0, 0, 0, 0)
+    } else if (period === '7days') {
+      startDate.setDate(startDate.getDate() - 7)
       startDate.setHours(0, 0, 0, 0)
     } else {
       startDate.setDate(startDate.getDate() - 30)
