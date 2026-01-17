@@ -94,7 +94,7 @@ model Goal {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, exerciseType, period])
   @@index([userId])
   @@index([archived])
+  @@index([userId, exerciseType, period, archived])
 }

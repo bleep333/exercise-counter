@@ -37,6 +37,15 @@ export default function GoalsPage() {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('active')
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
+  const [replaceConfirmation, setReplaceConfirmation] = useState<{
+    show: boolean
+    existingGoal: Goal | null
+    newGoalData: { exerciseType: string; targetCount: number; period: string; startDate: string } | null
+  }>({
+    show: false,
+    existingGoal: null,
+    newGoalData: null,
+  })
   const [formData, setFormData] = useState({
     exerciseType: 'pushups',
     targetCount: 100,
@@ -308,21 +317,83 @@ export default function GoalsPage() {
     setError(null)
 
     try {
+      // First, check if there's an active goal with the same exerciseType and period
+      // Exclude the goal being edited from the check
+      const existingActiveGoal = goals.find(
+        goal => 
+          !goal.archived &&
+          goal.exerciseType === formData.exerciseType &&
+          goal.period === formData.period &&
+          (!editingGoal || goal.id !== editingGoal.id) // Exclude the goal being edited
+      )
+
+      if (existingActiveGoal && !editingGoal) {
+        // Show confirmation modal
+        setReplaceConfirmation({
+          show: true,
+          existingGoal: existingActiveGoal,
+          newGoalData: {
+            exerciseType: formData.exerciseType,
+            targetCount: formData.targetCount,
+            period: formData.period,
+            startDate: formData.startDate,
+          },
+        })
+        return
+      }
+
+      // Proceed with creation/update
+      await submitGoal(formData, editingGoal !== null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save goal')
+    }
+  }
+
+  const submitGoal = async (data: typeof formData, isEdit: boolean, confirmReplace: boolean = false) => {
+    try {
       const response = await fetch('/api/goals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...data,
+          confirmReplace,
+          goalId: editingGoal?.id, // Send goal ID when editing
+        }),
       })
 
-      const data = await response.json()
+      const responseData = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to save goal')
+        // Check if backend also detected an active goal
+        if (response.status === 409 && responseData.error === 'ACTIVE_GOAL_EXISTS' && !confirmReplace) {
+          const existingActiveGoal = goals.find(
+            goal => 
+              !goal.archived &&
+              goal.exerciseType === data.exerciseType &&
+              goal.period === data.period
+          )
+          
+          if (existingActiveGoal) {
+            setReplaceConfirmation({
+              show: true,
+              existingGoal: existingActiveGoal,
+              newGoalData: {
+                exerciseType: data.exerciseType,
+                targetCount: data.targetCount,
+                period: data.period,
+                startDate: data.startDate,
+              },
+            })
+            return
+          }
+        }
+        throw new Error(responseData.error || 'Failed to save goal')
       }
 
       await fetchData()
       setShowAddForm(false)
       setEditingGoal(null)
+      setReplaceConfirmation({ show: false, existingGoal: null, newGoalData: null })
       setFormData({
         exerciseType: 'pushups',
         targetCount: 100,
@@ -332,6 +403,25 @@ export default function GoalsPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save goal')
     }
+  }
+
+  const handleConfirmReplace = async () => {
+    if (!replaceConfirmation.newGoalData) return
+    
+    await submitGoal(
+      {
+        exerciseType: replaceConfirmation.newGoalData.exerciseType as 'pushups' | 'situps' | 'squats',
+        targetCount: replaceConfirmation.newGoalData.targetCount,
+        period: replaceConfirmation.newGoalData.period as 'day' | 'week' | 'month',
+        startDate: replaceConfirmation.newGoalData.startDate,
+      },
+      false,
+      true // confirmReplace = true
+    )
+  }
+
+  const handleCancelReplace = () => {
+    setReplaceConfirmation({ show: false, existingGoal: null, newGoalData: null })
   }
 
   const handleDelete = async (goalId: string) => {
@@ -773,6 +863,44 @@ export default function GoalsPage() {
                   </div>
                 )
               })()}
+            </div>
+          </div>
+        )}
+
+        {/* Replace Goal Confirmation Modal */}
+        {replaceConfirmation.show && replaceConfirmation.existingGoal && replaceConfirmation.newGoalData && (
+          <div 
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={handleCancelReplace}
+          >
+            <div 
+              className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Replace existing goal?
+              </h2>
+              
+              <p className="text-gray-600 mb-6">
+                You already have an active {replaceConfirmation.existingGoal.period === 'day' ? 'Daily' : replaceConfirmation.existingGoal.period === 'week' ? 'Weekly' : 'Monthly'} {replaceConfirmation.existingGoal.exerciseType.charAt(0).toUpperCase() + replaceConfirmation.existingGoal.exerciseType.slice(1)} goal ({replaceConfirmation.existingGoal.targetCount.toLocaleString()} reps).
+                <br /><br />
+                Replacing it will archive the existing goal and create a new one with {replaceConfirmation.newGoalData.targetCount.toLocaleString()} reps.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelReplace}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmReplace}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                >
+                  Replace Goal
+                </button>
+              </div>
             </div>
           </div>
         )}

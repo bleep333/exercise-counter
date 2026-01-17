@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { exerciseType, targetCount, period, startDate } = body
+    const { exerciseType, targetCount, period, startDate, confirmReplace, goalId } = body
 
     if (!exerciseType || targetCount === undefined || !period) {
       return NextResponse.json(
@@ -75,14 +75,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if goal already exists for this user, exercise type, and period
-    const existingGoal = await prisma.goal.findUnique({
+    // Check for existing ACTIVE goals with the same exerciseType and period
+    const existingActiveGoals = await prisma.goal.findMany({
       where: {
-        userId_exerciseType_period: {
-          userId: session.user.id,
-          exerciseType,
-          period,
-        },
+        userId: session.user.id,
+        exerciseType,
+        period,
+        archived: false, // Only check active goals
       },
     })
 
@@ -127,20 +126,90 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (existingGoal) {
-      // Update existing goal
-      const updateData: any = { targetCount }
-      if (startDate) {
-        updateData.startDate = parsedStartDate
-      }
-      const goal = await prisma.goal.update({
-        where: { id: existingGoal.id },
-        data: updateData,
+    // If active goals exist and user hasn't confirmed replacement, return error
+    if (existingActiveGoals.length > 0 && !confirmReplace) {
+      const existingGoal = existingActiveGoals[0]
+      const periodLabel = period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'
+      const exerciseLabel = exerciseType.charAt(0).toUpperCase() + exerciseType.slice(1)
+      
+      return NextResponse.json(
+        { 
+          error: 'ACTIVE_GOAL_EXISTS',
+          existingGoal: {
+            id: existingGoal.id,
+            targetCount: existingGoal.targetCount,
+            periodLabel,
+            exerciseLabel,
+          }
+        },
+        { status: 409 } // Conflict status code
+      )
+    }
+
+    // If goalId is provided, we're editing an existing goal
+    if (goalId) {
+      // Verify the goal belongs to the user
+      const existingGoal = await prisma.goal.findUnique({
+        where: { id: goalId },
       })
+
+      if (!existingGoal) {
+        return NextResponse.json(
+          { error: 'Goal not found' },
+          { status: 404 }
+        )
+      }
+
+      if (existingGoal.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 403 }
+        )
+      }
+
+      // Update the existing goal
+      const goal = await prisma.goal.update({
+        where: { id: goalId },
+        data: {
+          targetCount,
+          startDate: parsedStartDate,
+        },
+      })
+
       return NextResponse.json({ goal })
     }
 
-    // Create new goal
+    // If user confirmed replacement, archive all existing active goals and create new one
+    if (confirmReplace && existingActiveGoals.length > 0) {
+      // Archive all existing active goals
+      await prisma.goal.updateMany({
+        where: {
+          userId: session.user.id,
+          exerciseType,
+          period,
+          archived: false,
+        },
+        data: {
+          archived: true,
+        },
+      })
+
+      // Create new goal
+      const goal = await prisma.goal.create({
+        data: {
+          userId: session.user.id,
+          exerciseType,
+          targetCount,
+          period,
+          startDate: parsedStartDate,
+          archived: false,
+        },
+      })
+
+      return NextResponse.json({ goal })
+    }
+
+    // Create new goal (no existing goal found)
     const goal = await prisma.goal.create({
       data: {
         userId: session.user.id,
@@ -148,6 +217,7 @@ export async function POST(request: NextRequest) {
         targetCount,
         period,
         startDate: parsedStartDate,
+        archived: false,
       },
     })
 

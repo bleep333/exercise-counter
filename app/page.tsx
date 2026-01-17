@@ -18,7 +18,7 @@ export default function Home() {
         </div>
 
         <p className="mt-4 text-sm text-gray-500">
-          No account required • Camera stays on your device
+          No account required • Save results later
         </p>
       </div>
     </main>
