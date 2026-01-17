@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, type FormEvent } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 export default function AccountPage() {
@@ -278,16 +278,6 @@ export default function AccountPage() {
               {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </form>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Account Actions</h2>
-          <button
-            onClick={() => signOut()}
-            className="w-full px-6 py-3 text-red-600 bg-red-50 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:shadow-lg hover:bg-red-100 transition-all"
-          >
-            Sign Out
-          </button>
         </div>
       </div>
     </div>
