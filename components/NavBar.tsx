@@ -8,13 +8,17 @@ import { useState, useEffect, useRef } from 'react'
 export function NavBar() {
   const pathname = usePathname()
   const { data: session } = useSession()
+
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setOpen(false)
       }
     }
@@ -61,66 +65,68 @@ export function NavBar() {
               </Link>
             ))}
 
-            {/* Profile / Auth */}
-            {session?.user ? (
-              <div className="relative" ref={dropdownRef}>
-                {/* Avatar button */}
-                <button
-                  type="button"
-                  onClick={() => setOpen((v) => !v)}
-                  className="ml-2 w-10 h-10 rounded-full border-2 border-gray-300 overflow-hidden hover:border-purple-500"
-                >
-                  {session.user.image ? (
-                    <img
-                      src={session.user.image}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <svg
-                      className="w-6 h-6 mx-auto mt-2 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            {/* Separator + Profile / Auth */}
+            <div className="ml-3 pl-3 border-l border-gray-200 h-8 flex items-center">
+              {session?.user ? (
+                <div className="relative" ref={dropdownRef}>
+                  {/* Avatar button */}
+                  <button
+                    type="button"
+                    onClick={() => setOpen((v) => !v)}
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 overflow-hidden hover:border-purple-500"
+                  >
+                    {session.user.image ? (
+                      <img
+                        src={session.user.image}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
                       />
-                    </svg>
+                    ) : (
+                      <svg
+                        className="w-6 h-6 mx-auto mt-2 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* Dropdown */}
+                  {open && (
+                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-lg z-50">
+                      <Link
+                        href="/account"
+                        onClick={() => setOpen(false)}
+                        className="block px-4 py-2 text-sm hover:bg-purple-50"
+                      >
+                        Profile
+                      </Link>
+
+                      <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Sign out
+                      </button>
+                    </div>
                   )}
-                </button>
-
-                {/* Dropdown */}
-                {open && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-lg z-50">
-                    <Link
-                      href="/account"
-                      onClick={() => setOpen(false)}
-                      className="block px-4 py-2 text-sm hover:bg-purple-50"
-                    >
-                      Profile
-                    </Link>
-
-                    <button
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                href="/auth/signin"
-                className="px-3 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:text-purple-600 hover:bg-purple-50"
-              >
-                Sign In
-              </Link>
-            )}
+                </div>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className="px-3 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
