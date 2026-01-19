@@ -45,24 +45,30 @@ export function NavBar() {
           </Link>
 
           {/* Links */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center">
             {[
-              ['/counter', 'Counter'],
-              ['/stats', 'Stats'],
+              ['/counter', 'Train'],
               ['/goals', 'Goals'],
+              ['/stats', 'Past Workouts'],
               ['/leaderboard', 'Leaderboard'],
-            ].map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm transition ${
-                  pathname === href
-                    ? 'text-purple-600 bg-purple-50'
-                    : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
-                }`}
-              >
-                {label}
-              </Link>
+            ].map(([href, label], index, arr) => (
+              <div key={href} className="flex items-center">
+                <Link
+                  href={href}
+                  className={`px-3 py-2 rounded-lg font-semibold text-sm transition ${
+                    pathname === href
+                      ? 'text-purple-600 bg-purple-50'
+                      : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                  }`}
+                >
+                  {label}
+                </Link>
+
+                {/* Divider (not after last item) */}
+                {index < arr.length - 1 && (
+                  <div className="mx-2 h-5 w-px bg-gray-300" />
+                )}
+              </div>
             ))}
 
             {/* Separator + Profile / Auth */}

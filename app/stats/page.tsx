@@ -509,7 +509,7 @@ export default function StatsPage() {
     <div className="min-h-[calc(100vh-4rem)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
       <div className="max-w-5xl w-full">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-8 text-center">
-          Exercise Statistics
+          Session History
         </h1>
         
         {showGuestPrompt && (() => {
