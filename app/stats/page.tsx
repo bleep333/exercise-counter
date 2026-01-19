@@ -517,42 +517,42 @@ export default function StatsPage() {
           const guestCount = guestExercises.length
           return (
             <div className="bg-gradient-to-r from-teal-600 to-emerald-600 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
-              <div className="text-white">
-                <h3 className="text-xl sm:text-2xl font-bold mb-3">💾 Save Your Stats</h3>
-                <p className="text-base sm:text-lg mb-6 leading-relaxed opacity-95">
+            <div className="text-white">
+              <h3 className="text-xl sm:text-2xl font-bold mb-3">💾 Save Your Stats</h3>
+              <p className="text-base sm:text-lg mb-6 leading-relaxed opacity-95">
                   You have {guestCount} exercise session{guestCount !== 1 ? 's' : ''} not added to account. 
-                  {session?.user 
-                    ? ' Click below to migrate them to your account.' 
-                    : ' Sign up to save them to your account and access them from any device.'}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {session?.user ? (
-                    <button 
-                      onClick={handleMigrateGuestData} 
+                {session?.user 
+                  ? ' Click below to migrate them to your account.' 
+                  : ' Sign up to save them to your account and access them from any device.'}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {session?.user ? (
+                  <button 
+                    onClick={handleMigrateGuestData} 
                       className="px-6 py-3 bg-white text-teal-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                      disabled={migrating}
-                    >
-                      {migrating ? 'Migrating...' : 'Migrate to Account'}
-                    </button>
-                  ) : (
-                    <>
-                      <button 
-                        onClick={() => router.push('/auth/signup')} 
+                    disabled={migrating}
+                  >
+                    {migrating ? 'Migrating...' : 'Migrate to Account'}
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      onClick={() => router.push('/auth/signup')} 
                         className="px-6 py-3 bg-white text-teal-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
-                      >
-                        Sign Up
-                      </button>
-                      <button 
-                        onClick={() => setShowGuestPrompt(false)} 
-                        className="px-6 py-3 bg-white/20 text-white border-2 border-white rounded-lg font-semibold hover:bg-white/30 transition-all"
-                      >
-                        Dismiss
-                      </button>
-                    </>
-                  )}
-                </div>
+                    >
+                      Sign Up
+                    </button>
+                    <button 
+                      onClick={() => setShowGuestPrompt(false)} 
+                      className="px-6 py-3 bg-white/20 text-white border-2 border-white rounded-lg font-semibold hover:bg-white/30 transition-all"
+                    >
+                      Dismiss
+                    </button>
+                  </>
+                )}
               </div>
             </div>
+          </div>
           )
         })()}
         
@@ -656,8 +656,8 @@ export default function StatsPage() {
                   >
                     + Add Session
                   </button>
-                </div>
-              ) : (
+            </div>
+          ) : (
                 <div className="bg-white rounded-xl p-4 shadow-lg">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-lg font-bold text-gray-800">Add Session</h2>
@@ -1036,7 +1036,7 @@ export default function StatsPage() {
                                         </svg>
                                       </button>
                                     )}
-                                  </div>
+                    </div>
                                 </td>
                               </tr>
                             )
@@ -1110,8 +1110,8 @@ export default function StatsPage() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+            </div>
+          )}
       </div>
     </div>
   )

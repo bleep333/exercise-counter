@@ -596,143 +596,173 @@ export function PoseCounter() {
       ref={containerRef}
       className={`flex flex-col items-center gap-6 w-full max-w-5xl ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}
     >
-      <div className={`relative ${isFullscreen ? 'w-full h-full flex items-center justify-center' : 'w-full max-w-[500px] max-h-[375px] rounded-2xl overflow-hidden shadow-2xl bg-black'}`}>
-        {isFullscreen && (
-          <>
-            {/* Rep count - top left */}
-            <div className="absolute top-6 left-6 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4">
-              <div className="text-xs text-gray-300 mb-1 font-semibold uppercase tracking-wide">Pushups</div>
-              <div className="text-5xl font-bold text-white">{count}</div>
-            </div>
+      {/* Fullscreen layout */}
+      {isFullscreen ? (
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* Rep count - top left */}
+          <div className="absolute top-6 left-6 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4">
+            <div className="text-xs text-gray-300 mb-1 font-semibold uppercase tracking-wide">Pushups</div>
+            <div className="text-5xl font-bold text-white">{count}</div>
+          </div>
 
-            {/* Time - top right (with space for exit button) */}
-            <div className="absolute top-6 right-20 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4">
-              <div className="text-xs text-gray-300 mb-1 font-semibold uppercase tracking-wide">Time</div>
-              <div className="text-5xl font-bold text-white">
+          {/* Duration - top right (with space for exit button) */}
+          <div className="absolute top-6 right-20 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4">
+            <div className="text-xs text-gray-300 mb-1 font-semibold uppercase tracking-wide">Duration</div>
+            <div className="text-5xl font-bold text-white">
+              {formatTime(elapsedTime)}
+            </div>
+          </div>
+
+          {/* Exit fullscreen button - top right */}
+          <button
+            onClick={exitFullscreen}
+            className="absolute top-6 right-6 z-20 bg-black/70 backdrop-blur-sm hover:bg-black/90 text-white rounded-xl px-4 py-3 transition-all mb-2"
+            title="Exit fullscreen"
+            style={{ transform: 'translateY(-100%)', marginBottom: '8px' }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Start/Stop Session button - bottom center */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex flex-col items-center gap-4">
+            <button 
+              onClick={startStopSession} 
+              className={`px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-2xl min-w-[200px] ${
+                sessionActive
+                  ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:scale-105'
+                  : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:scale-105'
+              } ${!isInitialized ? 'opacity-60 cursor-not-allowed' : ''}`}
+              disabled={!isInitialized}
+            >
+              {sessionActive ? 'Stop Session' : 'Start Session'}
+            </button>
+            
+            {/* Save Session button - shown when session is stopped and has count */}
+            {(!sessionActive && (count > 0 || saved)) && (
+              <button 
+                onClick={saveSession} 
+                className="px-8 py-4 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-full font-semibold text-lg shadow-2xl hover:shadow-xl hover:scale-105 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-2xl min-w-[200px]"
+                disabled={saved || isSaving}
+              >
+                {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
+              </button>
+            )}
+          </div>
+
+          <video
+            ref={videoRef}
+            className="w-full h-auto block invisible absolute"
+            style={{ visibility: 'hidden', position: 'absolute' }}
+            playsInline
+            autoPlay
+            muted
+          />
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full object-contain"
+            width={640}
+            height={480}
+          />
+          {!isInitialized && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white bg-black/70 p-8 rounded-xl z-20">
+              <p className="text-lg">Initializing camera...</p>
+              <p className="text-sm text-gray-300 mt-2">
+                Please allow camera access when prompted
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        // Normal layout: Buttons (left) | Camera (center) | Stats (right)
+        <div className="flex flex-col lg:flex-row gap-6 w-full items-start lg:items-center">
+          {/* Left: Buttons */}
+          <div className="flex flex-col gap-3 sm:gap-4 w-full lg:w-auto lg:min-w-[180px] order-3 lg:order-1">
+            <button 
+              onClick={startStopSession} 
+              className={`px-6 py-3 rounded-full font-semibold text-sm sm:text-base transition-all shadow-lg min-w-[140px] ${
+                sessionActive
+                  ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:-translate-y-0.5'
+                  : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:-translate-y-0.5'
+              } ${!isInitialized ? 'opacity-60 cursor-not-allowed' : ''}`}
+              disabled={!isInitialized}
+            >
+              {sessionActive ? 'Stop' : 'Start Session'}
+            </button>
+            <button 
+              onClick={saveSession} 
+              className="px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg min-w-[160px]"
+              disabled={(count === 0 && !saved) || saved || isSaving || sessionActive}
+            >
+              {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
+            </button>
+            <button 
+              onClick={() => setShowInstructions(!showInstructions)} 
+              className="px-6 py-3 text-teal-600 bg-white border-2 border-teal-600 rounded-full font-semibold text-sm sm:text-base shadow-md hover:bg-teal-600 hover:text-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
+            >
+              {showInstructions ? 'Hide' : 'Show'} Instructions
+            </button>
+          </div>
+
+          {/* Center: Camera feed */}
+          <div className="flex-1 w-full lg:w-auto order-1 lg:order-2">
+            <div className="relative w-full max-w-[500px] max-h-[375px] rounded-2xl overflow-hidden shadow-2xl bg-black mx-auto">
+              <video
+                ref={videoRef}
+                className="w-full h-auto block invisible absolute"
+                style={{ visibility: 'hidden', position: 'absolute' }}
+                playsInline
+                autoPlay
+                muted
+              />
+              <canvas
+                ref={canvasRef}
+                className="w-full h-auto block"
+                width={640}
+                height={480}
+              />
+              {!isInitialized && (
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white bg-black/70 p-8 rounded-xl z-20">
+                  <p className="text-lg">Initializing camera...</p>
+                  <p className="text-sm text-gray-300 mt-2">
+                    Please allow camera access when prompted
+                  </p>
+                </div>
+              )}
+
+              {/* Fullscreen button - bottom right */}
+              <button
+                onClick={enterFullscreen}
+                className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm hover:bg-black/90 text-white rounded-xl p-3 transition-all z-10"
+                title="Enter fullscreen"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Stats boxes */}
+          <div className="flex flex-col gap-4 sm:gap-6 w-full lg:w-auto lg:min-w-[140px] order-2 lg:order-3">
+            <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
+              <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Pushups</div>
+              <div className="text-3xl font-bold text-teal-600">{count}</div>
+            </div>
+            <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
+              <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">State</div>
+              <div className="text-3xl font-bold text-teal-600">{state}</div>
+            </div>
+            <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
+              <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Duration</div>
+              <div className="text-3xl font-bold text-teal-600">
                 {formatTime(elapsedTime)}
               </div>
             </div>
-
-            {/* Exit fullscreen button - top right (above time) */}
-            <button
-              onClick={exitFullscreen}
-              className="absolute top-6 right-6 z-20 bg-black/70 backdrop-blur-sm hover:bg-black/90 text-white rounded-xl px-4 py-3 transition-all mb-2"
-              title="Exit fullscreen"
-              style={{ transform: 'translateY(-100%)', marginBottom: '8px' }}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Start/Stop Session button - bottom center */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex flex-col items-center gap-4">
-              <button 
-                onClick={startStopSession} 
-                className={`px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-2xl min-w-[200px] ${
-                  sessionActive
-                    ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:scale-105'
-                    : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:scale-105'
-                } ${!isInitialized ? 'opacity-60 cursor-not-allowed' : ''}`}
-                disabled={!isInitialized}
-              >
-                {sessionActive ? 'Stop Session' : 'Start Session'}
-              </button>
-              
-              {/* Save Session button - shown when session is stopped and has count */}
-              {(!sessionActive && (count > 0 || saved)) && (
-                <button 
-                  onClick={saveSession} 
-                  className="px-8 py-4 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-full font-semibold text-lg shadow-2xl hover:shadow-xl hover:scale-105 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-2xl min-w-[200px]"
-                  disabled={saved || isSaving}
-                >
-                  {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
-                </button>
-              )}
-            </div>
-          </>
-        )}
-
-        <video
-          ref={videoRef}
-          className="w-full h-auto block invisible absolute"
-          style={{ visibility: 'hidden', position: 'absolute' }}
-          playsInline
-          autoPlay
-          muted
-        />
-        <canvas
-          ref={canvasRef}
-          className={isFullscreen ? 'w-full h-full object-contain' : 'w-full h-auto block'}
-          width={640}
-          height={480}
-        />
-        {!isInitialized && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white bg-black/70 p-8 rounded-xl z-20">
-            <p className="text-lg">Initializing camera...</p>
-            <p className="text-sm text-gray-300 mt-2">
-              Please allow camera access when prompted
-            </p>
-          </div>
-        )}
-
-        {/* Fullscreen button - bottom right (only when not in fullscreen) */}
-        {!isFullscreen && (
-          <button
-            onClick={enterFullscreen}
-            className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm hover:bg-black/90 text-white rounded-xl p-3 transition-all z-10"
-            title="Enter fullscreen"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-            </svg>
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap gap-4 sm:gap-6 justify-center w-full">
-        <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
-          <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Pushups</div>
-          <div className="text-3xl font-bold text-teal-600">{count}</div>
-        </div>
-        <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
-          <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">State</div>
-          <div className="text-3xl font-bold text-teal-600">{state}</div>
-        </div>
-        <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
-          <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Time</div>
-          <div className="text-3xl font-bold text-teal-600">
-            {formatTime(elapsedTime)}
           </div>
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-3 sm:gap-4 mt-2 justify-center">
-        <button 
-          onClick={startStopSession} 
-          className={`px-6 py-3 rounded-full font-semibold text-sm sm:text-base transition-all shadow-lg min-w-[140px] ${
-            sessionActive
-              ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl hover:-translate-y-0.5'
-              : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-xl hover:-translate-y-0.5'
-          } ${!isInitialized ? 'opacity-60 cursor-not-allowed' : ''}`}
-          disabled={!isInitialized}
-        >
-          {sessionActive ? 'Stop' : 'Start Session'}
-        </button>
-        <button 
-          onClick={saveSession} 
-          className="px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg min-w-[160px]"
-          disabled={(count === 0 && !saved) || saved || isSaving || sessionActive}
-        >
-          {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
-        </button>
-        <button 
-          onClick={() => setShowInstructions(!showInstructions)} 
-          className="px-6 py-3 text-teal-600 bg-white border-2 border-teal-600 rounded-full font-semibold text-sm sm:text-base shadow-md hover:bg-teal-600 hover:text-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
-        >
-          {showInstructions ? 'Hide' : 'Show'} Instructions
-        </button>
-      </div>
+      )}
 
       {showInstructions && (
         <div className="bg-white rounded-2xl p-6 max-w-2xl shadow-lg text-sm">
