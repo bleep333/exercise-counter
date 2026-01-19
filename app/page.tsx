@@ -11,7 +11,7 @@ export default function Home() {
         <div className="mt-8">
           <Link
             href="/counter"
-            className="inline-flex items-center justify-center px-7 py-4 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-lg font-semibold shadow-md hover:shadow-lg hover:opacity-95 transition"
+            className="inline-flex items-center justify-center px-7 py-4 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-lg font-semibold shadow-md hover:shadow-lg hover:opacity-95 transition"
           >
             Start Counting
           </Link>

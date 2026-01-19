@@ -584,7 +584,7 @@ export function PoseCounter() {
     return (
       <div className="text-center p-12 bg-white rounded-2xl max-w-md shadow-lg">
         <p className="text-red-500 text-xl mb-8">{error}</p>
-        <Link href="/" className="inline-block px-6 py-3 bg-purple-600 text-white rounded-full font-semibold hover:bg-purple-700 hover:-translate-y-0.5 transition-all">
+        <Link href="/" className="inline-block px-6 py-3 bg-teal-600 text-white rounded-full font-semibold hover:bg-teal-700 hover:-translate-y-0.5 transition-all">
           Go Back
         </Link>
       </div>
@@ -643,7 +643,7 @@ export function PoseCounter() {
               {(!sessionActive && (count > 0 || saved)) && (
                 <button 
                   onClick={saveSession} 
-                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold text-lg shadow-2xl hover:shadow-xl hover:scale-105 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-2xl min-w-[200px]"
+                  className="px-8 py-4 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-full font-semibold text-lg shadow-2xl hover:shadow-xl hover:scale-105 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-2xl min-w-[200px]"
                   disabled={saved || isSaving}
                 >
                   {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
@@ -693,15 +693,15 @@ export function PoseCounter() {
       <div className="flex flex-wrap gap-4 sm:gap-6 justify-center w-full">
         <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
           <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Pushups</div>
-          <div className="text-3xl font-bold text-purple-600">{count}</div>
+          <div className="text-3xl font-bold text-teal-600">{count}</div>
         </div>
         <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
           <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">State</div>
-          <div className="text-3xl font-bold text-purple-600">{state}</div>
+          <div className="text-3xl font-bold text-teal-600">{state}</div>
         </div>
         <div className="bg-white rounded-2xl px-6 py-4 text-center shadow-lg min-w-[120px]">
           <div className="text-xs text-gray-600 mb-2 font-semibold uppercase tracking-wide">Time</div>
-          <div className="text-3xl font-bold text-purple-600">
+          <div className="text-3xl font-bold text-teal-600">
             {formatTime(elapsedTime)}
           </div>
         </div>
@@ -721,14 +721,14 @@ export function PoseCounter() {
         </button>
         <button 
           onClick={saveSession} 
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg min-w-[160px]"
+          className="px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg min-w-[160px]"
           disabled={(count === 0 && !saved) || saved || isSaving || sessionActive}
         >
           {isSaving ? 'Saving...' : saved ? '✓ Saved successfully' : 'Save Session'}
         </button>
         <button 
           onClick={() => setShowInstructions(!showInstructions)} 
-          className="px-6 py-3 text-purple-600 bg-white border-2 border-purple-600 rounded-full font-semibold text-sm sm:text-base shadow-md hover:bg-purple-600 hover:text-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
+          className="px-6 py-3 text-teal-600 bg-white border-2 border-teal-600 rounded-full font-semibold text-sm sm:text-base shadow-md hover:bg-teal-600 hover:text-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
         >
           {showInstructions ? 'Hide' : 'Show'} Instructions
         </button>
@@ -738,19 +738,19 @@ export function PoseCounter() {
         <div className="bg-white rounded-2xl p-6 max-w-2xl shadow-lg text-sm">
           <h3 className="text-gray-800 mb-4 text-xl font-bold">Instructions:</h3>
           <ul className="list-none p-0 space-y-2">
-            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-teal-600 before:font-bold">
               Position yourself so your side profile is visible to the camera
             </li>
-            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-teal-600 before:font-bold">
               Ensure good lighting and a clear background
             </li>
-            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-teal-600 before:font-bold">
               Click 'Start Session' to begin tracking
             </li>
-            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-teal-600 before:font-bold">
               Start doing pushups - the counter will track automatically
             </li>
-            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-purple-600 before:font-bold">
+            <li className="text-gray-600 pl-6 relative before:content-['✓'] before:absolute before:left-0 before:text-teal-600 before:font-bold">
               Click 'Stop' when you're done, then 'Save Session' to save your workout
             </li>
           </ul>

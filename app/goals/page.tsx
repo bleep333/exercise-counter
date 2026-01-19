@@ -482,7 +482,7 @@ export default function GoalsPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
       <div className="max-w-4xl w-full">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-8 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-8 text-center">
           Exercise Goals
         </h1>
 
@@ -502,13 +502,13 @@ export default function GoalsPage() {
               }}
               className={`px-6 py-3 font-semibold transition-all relative ${
                 activeTab === 'active'
-                  ? 'text-purple-600'
-                  : 'text-gray-600 hover:text-purple-600'
+                  ? 'text-teal-600'
+                  : 'text-gray-600 hover:text-teal-600'
               }`}
             >
               Active
               {activeTab === 'active' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-full" />
               )}
             </button>
             <button
@@ -518,13 +518,13 @@ export default function GoalsPage() {
               }}
               className={`px-6 py-3 font-semibold transition-all relative ${
                 activeTab === 'archived'
-                  ? 'text-purple-600'
-                  : 'text-gray-600 hover:text-purple-600'
+                  ? 'text-teal-600'
+                  : 'text-gray-600 hover:text-teal-600'
               }`}
             >
               Archived
               {activeTab === 'archived' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-full" />
               )}
             </button>
           </div>
@@ -541,7 +541,7 @@ export default function GoalsPage() {
                     startDate: new Date().toISOString().split('T')[0],
                   })
                 }}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                className="px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
               >
                 {showAddForm ? 'Cancel' : '+ Add Goal'}
               </button>
@@ -560,7 +560,7 @@ export default function GoalsPage() {
                 <select
                   value={formData.exerciseType}
                   onChange={(e) => setFormData({ ...formData, exerciseType: e.target.value })}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                   required
                 >
                   {getExerciseTypes().length > 0 ? (
@@ -584,7 +584,7 @@ export default function GoalsPage() {
                 <select
                   value={formData.period}
                   onChange={(e) => setFormData({ ...formData, period: e.target.value as 'day' | 'week' | 'month' })}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                   required
                 >
                   <option value="day">Daily</option>
@@ -600,7 +600,7 @@ export default function GoalsPage() {
                   min="1"
                   value={formData.targetCount}
                   onChange={(e) => setFormData({ ...formData, targetCount: parseInt(e.target.value) || 0 })}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                   required
                 />
               </div>
@@ -611,7 +611,7 @@ export default function GoalsPage() {
                   type="date"
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                   required
                 />
                 <p className="text-xs text-gray-500">
@@ -621,7 +621,7 @@ export default function GoalsPage() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                className="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
               >
                 {editingGoal ? 'Update Goal' : 'Create Goal'}
               </button>
@@ -643,7 +643,7 @@ export default function GoalsPage() {
             {activeTab === 'active' && (
               <button
                 onClick={() => setShowAddForm(true)}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                className="px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
               >
                 Create Your First Goal
               </button>
@@ -682,7 +682,7 @@ export default function GoalsPage() {
                         </p>
                       )}
                       {timeUntilStart.hasStarted && streak > 0 && (
-                        <p className="text-sm text-purple-600 font-semibold mt-1">
+                        <p className="text-sm text-teal-600 font-semibold mt-1">
                           🔥 {streak} {periodSingular} streak
                         </p>
                       )}
@@ -691,7 +691,7 @@ export default function GoalsPage() {
                       {!goal.archived && (
                         <button
                           onClick={() => handleEdit(goal)}
-                          className="px-4 py-2 text-sm font-semibold text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                          className="px-4 py-2 text-sm font-semibold text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors"
                         >
                           Edit
                         </button>
@@ -716,7 +716,7 @@ export default function GoalsPage() {
                       <div className="mb-2">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-sm font-semibold text-gray-700">Progress</span>
-                          <span className="text-sm font-bold text-purple-600">
+                          <span className="text-sm font-bold text-teal-600">
                             {progress.current.toLocaleString()} / {goal.targetCount.toLocaleString()} reps
                           </span>
                         </div>
@@ -726,9 +726,9 @@ export default function GoalsPage() {
                               progress.percentage >= 100
                                 ? 'bg-gradient-to-r from-green-500 to-green-600'
                                 : progress.percentage >= 75
-                                ? 'bg-gradient-to-r from-purple-600 to-pink-600'
+                                ? 'bg-gradient-to-r from-teal-600 to-emerald-600'
                                 : progress.percentage >= 50
-                                ? 'bg-gradient-to-r from-blue-500 to-purple-600'
+                                ? 'bg-gradient-to-r from-cyan-500 to-teal-600'
                                 : 'bg-gradient-to-r from-yellow-400 to-orange-500'
                             }`}
                             style={{ width: `${progress.percentage}%` }}
@@ -804,7 +804,7 @@ export default function GoalsPage() {
                   const streak = calculateStreak(selectedGoal)
                   if (streak > 0) {
                     return (
-                      <p className="text-sm text-purple-600 font-semibold mt-1">
+                      <p className="text-sm text-teal-600 font-semibold mt-1">
                         🔥 Current streak: {streak} {selectedGoal.period === 'day' ? 'day' : selectedGoal.period === 'week' ? 'week' : 'month'}(s)
                       </p>
                     )
@@ -896,7 +896,7 @@ export default function GoalsPage() {
                 </button>
                 <button
                   onClick={handleConfirmReplace}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
                 >
                   Replace Goal
                 </button>

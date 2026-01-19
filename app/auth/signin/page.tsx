@@ -48,7 +48,7 @@ function SignInForm() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex justify-center items-center py-8 px-4">
       <div className="bg-white rounded-3xl p-6 sm:p-8 md:p-12 max-w-md w-full shadow-2xl">
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 text-center">
+        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2 text-center">
           Sign In
         </h1>
         <p className="text-gray-600 text-center mb-6 sm:mb-8 text-sm sm:text-base">
@@ -74,7 +74,7 @@ function SignInForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
-              className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-purple-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -90,13 +90,13 @@ function SignInForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
-              className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-purple-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
 
           <button 
             type="submit" 
-            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 mt-2"
+            className="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 mt-2"
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}
@@ -105,7 +105,7 @@ function SignInForm() {
 
         <p className="text-center mt-6 sm:mt-8 text-gray-600 text-sm sm:text-base">
           Don't have an account?{' '}
-          <Link href="/auth/signup" className="text-purple-600 font-semibold hover:underline">
+          <Link href="/auth/signup" className="text-teal-600 font-semibold hover:underline">
             Sign up
           </Link>
         </p>

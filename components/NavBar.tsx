@@ -50,7 +50,7 @@ export function NavBar() {
               className="h-12 w-auto"
               priority
             />
-            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
               CleanReps
             </span>
           </Link>
@@ -68,8 +68,8 @@ export function NavBar() {
                   href={href}
                   className={`px-3 py-2 rounded-lg font-semibold text-sm transition ${
                     pathname === href
-                      ? 'text-purple-600 bg-purple-50'
-                      : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                      ? 'text-teal-600 bg-teal-50'
+                      : 'text-gray-600 hover:text-teal-600 hover:bg-teal-50'
                   }`}
                 >
                   {label}
@@ -86,7 +86,7 @@ export function NavBar() {
             <div className="ml-3 pl-3 border-l border-gray-200 h-8 flex items-center">
               {status === 'loading' ? (
                 <div className="w-10 h-10 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-teal-600 rounded-full animate-spin" />
                 </div>
               ) : session?.user ? (
                 <div className="relative" ref={dropdownRef}>
@@ -94,7 +94,7 @@ export function NavBar() {
                   <button
                     type="button"
                     onClick={() => setOpen((v) => !v)}
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 overflow-hidden hover:border-purple-500"
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 overflow-hidden hover:border-teal-500"
                   >
                     {session.user.image ? (
                       <img
@@ -125,7 +125,7 @@ export function NavBar() {
                       <Link
                         href="/account"
                         onClick={() => setOpen(false)}
-                        className="block px-4 py-2 text-sm hover:bg-purple-50"
+                        className="block px-4 py-2 text-sm hover:bg-teal-50"
                       >
                         Profile
                       </Link>
@@ -142,7 +142,7 @@ export function NavBar() {
               ) : (
                 <Link
                   href="/auth/signin"
-                  className="px-3 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                  className="px-3 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:text-teal-600 hover:bg-teal-50"
                 >
                   Sign In
                 </Link>

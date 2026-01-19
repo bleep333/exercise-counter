@@ -51,7 +51,7 @@ function LeaderboardContent() {
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2 text-center">
             🏆 Leaderboard
           </h1>
           <p className="text-gray-600 text-center mb-6 sm:mb-8 text-sm sm:text-base">
@@ -81,7 +81,7 @@ function LeaderboardContent() {
               onClick={() => setPeriod('today')}
               className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                 period === 'today'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -91,7 +91,7 @@ function LeaderboardContent() {
               onClick={() => setPeriod('7days')}
               className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                 period === '7days'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -101,7 +101,7 @@ function LeaderboardContent() {
               onClick={() => setPeriod('30days')}
               className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                 period === '30days'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -147,7 +147,7 @@ function LeaderboardContent() {
                           ? 'bg-gray-400 text-gray-900'
                           : index === 2
                           ? 'bg-orange-400 text-orange-900'
-                          : 'bg-purple-100 text-purple-700'
+                          : 'bg-teal-100 text-teal-700'
                       }`}
                     >
                       {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
@@ -159,7 +159,7 @@ function LeaderboardContent() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-purple-600">{entry.totalCount}</p>
+                    <p className="text-2xl font-bold text-teal-600">{entry.totalCount}</p>
                     <p className="text-xs text-gray-500">{exerciseType}</p>
                   </div>
                 </div>
@@ -170,7 +170,7 @@ function LeaderboardContent() {
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
               Only users with profile names are shown on the leaderboard. Set your profile name in{' '}
-              <a href="/account" className="text-purple-600 hover:underline font-semibold">
+              <a href="/account" className="text-teal-600 hover:underline font-semibold">
                 Account Settings
               </a>
               .

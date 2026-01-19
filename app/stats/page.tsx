@@ -496,7 +496,7 @@ export default function StatsPage() {
           <p className="text-red-500 text-xl mb-4">{error}</p>
           <button 
             onClick={fetchExercises} 
-            className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 hover:-translate-y-0.5 transition-all shadow-md"
+            className="px-6 py-3 bg-white text-teal-600 rounded-lg font-semibold hover:bg-teal-50 hover:-translate-y-0.5 transition-all shadow-md"
           >
             Retry
           </button>
@@ -508,7 +508,7 @@ export default function StatsPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
       <div className="max-w-5xl w-full">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-8 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-8 text-center">
           Session History
         </h1>
         
@@ -516,7 +516,7 @@ export default function StatsPage() {
           const guestExercises = getGuestExercises()
           const guestCount = guestExercises.length
           return (
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
+            <div className="bg-gradient-to-r from-teal-600 to-emerald-600 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
               <div className="text-white">
                 <h3 className="text-xl sm:text-2xl font-bold mb-3">💾 Save Your Stats</h3>
                 <p className="text-base sm:text-lg mb-6 leading-relaxed opacity-95">
@@ -529,7 +529,7 @@ export default function StatsPage() {
                   {session?.user ? (
                     <button 
                       onClick={handleMigrateGuestData} 
-                      className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="px-6 py-3 bg-white text-teal-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                       disabled={migrating}
                     >
                       {migrating ? 'Migrating...' : 'Migrate to Account'}
@@ -538,7 +538,7 @@ export default function StatsPage() {
                     <>
                       <button 
                         onClick={() => router.push('/auth/signup')} 
-                        className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                        className="px-6 py-3 bg-white text-teal-600 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
                       >
                         Sign Up
                       </button>
@@ -580,26 +580,26 @@ export default function StatsPage() {
             onClick={() => setActiveTab('history')}
             className={`px-6 py-3 font-semibold transition-all relative ${
               activeTab === 'history'
-                ? 'text-purple-600'
-                : 'text-gray-600 hover:text-purple-600'
+                ? 'text-teal-600'
+                : 'text-gray-600 hover:text-teal-600'
             }`}
           >
             History
             {activeTab === 'history' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-full" />
             )}
           </button>
           <button
             onClick={() => setActiveTab('trends')}
             className={`px-6 py-3 font-semibold transition-all relative ${
               activeTab === 'trends'
-                ? 'text-purple-600'
-                : 'text-gray-600 hover:text-purple-600'
+                ? 'text-teal-600'
+                : 'text-gray-600 hover:text-teal-600'
             }`}
           >
             Trends
             {activeTab === 'trends' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-full" />
             )}
           </button>
         </div>
@@ -614,7 +614,7 @@ export default function StatsPage() {
                     <select
                       value={filterExerciseType}
                       onChange={(e) => setFilterExerciseType(e.target.value)}
-                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                     >
                       <option value="all">All Exercises</option>
                       {exerciseTypes.map(type => (
@@ -628,14 +628,14 @@ export default function StatsPage() {
                       value={filterDateFrom}
                       onChange={(e) => setFilterDateFrom(e.target.value)}
                       placeholder="From"
-                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                     />
                     <input
                       type="date"
                       value={filterDateTo}
                       onChange={(e) => setFilterDateTo(e.target.value)}
                       placeholder="To"
-                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                     />
                     {(filterExerciseType !== 'all' || filterDateFrom || filterDateTo) && (
                       <button
@@ -644,7 +644,7 @@ export default function StatsPage() {
                           setFilterDateFrom('')
                           setFilterDateTo('')
                         }}
-                        className="px-3 py-1.5 text-xs text-purple-600 hover:text-purple-700 font-semibold"
+                        className="px-3 py-1.5 text-xs text-teal-600 hover:text-teal-700 font-semibold"
                       >
                         Clear
                       </button>
@@ -652,7 +652,7 @@ export default function StatsPage() {
                   </div>
                   <button
                     onClick={() => setShowAddForm(true)}
-                    className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all"
+                    className="px-4 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all"
                   >
                     + Add Session
                   </button>
@@ -692,7 +692,7 @@ export default function StatsPage() {
                         <select
                           value={addFormData.exerciseType}
                           onChange={(e) => setAddFormData({ ...addFormData, exerciseType: e.target.value })}
-                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                           required
                         >
                           {commonExerciseTypes.map(type => (
@@ -709,7 +709,7 @@ export default function StatsPage() {
                           type="number"
                           value={addFormData.count}
                           onChange={(e) => setAddFormData({ ...addFormData, count: e.target.value })}
-                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                           min="1"
                           required
                         />
@@ -721,7 +721,7 @@ export default function StatsPage() {
                           type="number"
                           value={addFormData.duration}
                           onChange={(e) => setAddFormData({ ...addFormData, duration: e.target.value })}
-                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                           min="0"
                           placeholder="Optional"
                         />
@@ -733,7 +733,7 @@ export default function StatsPage() {
                           type="date"
                           value={addFormData.completedAt}
                           onChange={(e) => setAddFormData({ ...addFormData, completedAt: e.target.value })}
-                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                           required
                         />
                       </div>
@@ -744,7 +744,7 @@ export default function StatsPage() {
                           type="time"
                           value={addFormData.completedAtTime}
                           onChange={(e) => setAddFormData({ ...addFormData, completedAtTime: e.target.value })}
-                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                         />
                       </div>
                     </div>
@@ -753,7 +753,7 @@ export default function StatsPage() {
                       <button
                         type="submit"
                         disabled={addingSession}
-                        className="px-4 py-1.5 text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="px-4 py-1.5 text-sm bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {addingSession ? 'Adding...' : 'Add'}
                       </button>
@@ -872,7 +872,7 @@ export default function StatsPage() {
                               <div className="flex items-center gap-1 sm:gap-2">
                                 Exercise
                                 {sortColumn === 'exercise' && (
-                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                  <span className="text-teal-600 text-xs sm:text-sm">
                                     {sortDirection === 'asc' ? '↑' : '↓'}
                                   </span>
                                 )}
@@ -885,7 +885,7 @@ export default function StatsPage() {
                               <div className="flex items-center gap-1 sm:gap-2">
                                 Date
                                 {sortColumn === 'date' && (
-                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                  <span className="text-teal-600 text-xs sm:text-sm">
                                     {sortDirection === 'asc' ? '↑' : '↓'}
                                   </span>
                                 )}
@@ -898,7 +898,7 @@ export default function StatsPage() {
                               <div className="flex items-center gap-1 sm:gap-2">
                                 Reps
                                 {sortColumn === 'count' && (
-                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                  <span className="text-teal-600 text-xs sm:text-sm">
                                     {sortDirection === 'asc' ? '↑' : '↓'}
                                   </span>
                                 )}
@@ -911,7 +911,7 @@ export default function StatsPage() {
                               <div className="flex items-center gap-1 sm:gap-2">
                                 Duration
                                 {sortColumn === 'duration' && (
-                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                  <span className="text-teal-600 text-xs sm:text-sm">
                                     {sortDirection === 'asc' ? '↑' : '↓'}
                                   </span>
                                 )}
@@ -924,7 +924,7 @@ export default function StatsPage() {
                               <div className="flex items-center gap-1 sm:gap-2">
                                 Calories
                                 {sortColumn === 'calories' && (
-                                  <span className="text-purple-600 text-xs sm:text-sm">
+                                  <span className="text-teal-600 text-xs sm:text-sm">
                                     {sortDirection === 'asc' ? '↑' : '↓'}
                                   </span>
                                 )}
@@ -941,7 +941,7 @@ export default function StatsPage() {
                             return (
                               <tr
                                 key={exercise.id}
-                                className={`hover:bg-purple-50 ${isDeleting ? 'animate-slide-out' : ''}`}
+                                className={`hover:bg-teal-50 ${isDeleting ? 'animate-slide-out' : ''}`}
                               >
                                 <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900">
                                   <div className="flex items-center gap-1 sm:gap-2">
@@ -952,7 +952,7 @@ export default function StatsPage() {
                                 <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
                                   <span className="whitespace-nowrap">{formatDate(exercise.completedAt)}</span>
                                 </td>
-                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-teal-600 whitespace-nowrap">
                                   {editingRepId === exercise.id ? (
                                     <div className="flex items-center gap-1">
                                       <input
@@ -966,7 +966,7 @@ export default function StatsPage() {
                                             handleRepEditCancel()
                                           }
                                         }}
-                                        className="w-20 px-2 py-1 border-2 border-purple-300 rounded focus:outline-none focus:border-purple-600 text-sm"
+                                        className="w-20 px-2 py-1 border-2 border-teal-300 rounded focus:outline-none focus:border-teal-600 text-sm"
                                         min="0"
                                         autoFocus
                                       />
@@ -988,17 +988,17 @@ export default function StatsPage() {
                                   ) : (
                                     <button
                                       onClick={() => handleRepEditClick(exercise.id, exercise.count)}
-                                      className="hover:bg-purple-50 px-2 py-1 rounded transition-colors cursor-pointer"
+                                      className="hover:bg-teal-50 px-2 py-1 rounded transition-colors cursor-pointer"
                                       title="Click to edit rep count"
                                     >
                                       {exercise.count.toLocaleString()}
                                     </button>
                                   )}
                                 </td>
-                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-teal-600 whitespace-nowrap">
                                   {formatDuration(exercise.duration)}
                                 </td>
-                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-purple-600 whitespace-nowrap">
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-teal-600 whitespace-nowrap">
                                   {calories !== null ? (
                                     `${calories.toFixed(1)} kcal`
                                   ) : (
@@ -1059,15 +1059,15 @@ export default function StatsPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Sessions</div>
-                    <div className="text-2xl font-bold text-purple-600">{trends.daily.count}</div>
+                    <div className="text-2xl font-bold text-teal-600">{trends.daily.count}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Total Reps</div>
-                    <div className="text-2xl font-bold text-purple-600">{trends.daily.reps}</div>
+                    <div className="text-2xl font-bold text-teal-600">{trends.daily.reps}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Total Duration</div>
-                    <div className="text-2xl font-bold text-purple-600">{formatDuration(trends.daily.duration)}</div>
+                    <div className="text-2xl font-bold text-teal-600">{formatDuration(trends.daily.duration)}</div>
                   </div>
                 </div>
               </div>
@@ -1078,15 +1078,15 @@ export default function StatsPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Sessions/Day</div>
-                    <div className="text-2xl font-bold text-purple-600">{trends.weekly.count.toFixed(1)}</div>
+                    <div className="text-2xl font-bold text-teal-600">{trends.weekly.count.toFixed(1)}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Reps/Day</div>
-                    <div className="text-2xl font-bold text-purple-600">{Math.round(trends.weekly.reps)}</div>
+                    <div className="text-2xl font-bold text-teal-600">{Math.round(trends.weekly.reps)}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Duration/Day</div>
-                    <div className="text-2xl font-bold text-purple-600">{formatDuration(Math.round(trends.weekly.duration))}</div>
+                    <div className="text-2xl font-bold text-teal-600">{formatDuration(Math.round(trends.weekly.duration))}</div>
                   </div>
                 </div>
               </div>
@@ -1097,15 +1097,15 @@ export default function StatsPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Sessions/Day</div>
-                    <div className="text-2xl font-bold text-purple-600">{trends.monthly.count.toFixed(1)}</div>
+                    <div className="text-2xl font-bold text-teal-600">{trends.monthly.count.toFixed(1)}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Reps/Day</div>
-                    <div className="text-2xl font-bold text-purple-600">{Math.round(trends.monthly.reps)}</div>
+                    <div className="text-2xl font-bold text-teal-600">{Math.round(trends.monthly.reps)}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Duration/Day</div>
-                    <div className="text-2xl font-bold text-purple-600">{formatDuration(Math.round(trends.monthly.duration))}</div>
+                    <div className="text-2xl font-bold text-teal-600">{formatDuration(Math.round(trends.monthly.duration))}</div>
                   </div>
                 </div>
               </div>

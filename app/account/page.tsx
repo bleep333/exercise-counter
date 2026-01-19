@@ -141,7 +141,7 @@ export default function AccountPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-8 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-8 text-center">
           Profile Settings
         </h1>
 
@@ -198,7 +198,7 @@ export default function AccountPage() {
                 maxLength={30}
                 disabled={loading}
                 placeholder="Choose a unique profile name"
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-purple-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
               />
               <p className="text-xs text-gray-500">
                 Must be unique. 3-30 characters. This name will appear on the leaderboard if visibility is enabled.
@@ -223,8 +223,8 @@ export default function AccountPage() {
                   setLeaderboardVisible(!leaderboardVisible)
                 }}
                 disabled={loading}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 disabled:opacity-50 ${
-                  leaderboardVisible ? 'bg-purple-600' : 'bg-gray-300'
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 disabled:opacity-50 ${
+                  leaderboardVisible ? 'bg-teal-600' : 'bg-gray-300'
                 }`}
               >
                 <span
@@ -263,7 +263,7 @@ export default function AccountPage() {
                 }}
                 disabled={loading}
                 placeholder="Enter your weight in kilograms"
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-purple-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
               />
               <p className="text-xs text-gray-500">
                 Your weight is used to calculate calories burned during exercises. Leave empty to hide calorie estimates.
@@ -272,7 +272,7 @@ export default function AccountPage() {
 
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              className="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               disabled={loading || !hasChanges()}
             >
               {loading ? 'Saving...' : 'Save Changes'}
