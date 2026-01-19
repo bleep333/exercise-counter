@@ -10,26 +10,33 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const startDate = new Date()
 
-    if (period === 'today') {
-      startDate.setHours(0, 0, 0, 0)
-    } else if (period === '7days') {
-      startDate.setDate(startDate.getDate() - 7)
-      startDate.setHours(0, 0, 0, 0)
-    } else {
-      startDate.setDate(startDate.getDate() - 30)
-      startDate.setHours(0, 0, 0, 0)
+    // Build the where clause conditionally based on period
+    const whereClause: any = {
+      exerciseType,
+      userId: { not: null }, // Only logged-in users
     }
 
-    // Get exercises within the time period, grouped by user
+    // Only add date filter if period is not 'overall'
+    if (period !== 'overall') {
+      if (period === 'today') {
+        startDate.setHours(0, 0, 0, 0)
+      } else if (period === '7days') {
+        startDate.setDate(startDate.getDate() - 7)
+        startDate.setHours(0, 0, 0, 0)
+      } else {
+        // Default to 30 days
+        startDate.setDate(startDate.getDate() - 30)
+        startDate.setHours(0, 0, 0, 0)
+      }
+      whereClause.completedAt = {
+        gte: startDate,
+        lte: now,
+      }
+    }
+
+    // Get exercises within the time period (or all time if overall), grouped by user
     const exercises = await prisma.exercise.findMany({
-      where: {
-        exerciseType,
-        completedAt: {
-          gte: startDate,
-          lte: now,
-        },
-        userId: { not: null }, // Only logged-in users
-      },
+      where: whereClause,
       include: {
         user: {
           select: {

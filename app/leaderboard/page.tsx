@@ -10,8 +10,8 @@ interface LeaderboardEntry {
 
 function LeaderboardContent() {
   const searchParams = useSearchParams()
-  const [period, setPeriod] = useState<'today' | '7days' | '30days'>(
-    (searchParams.get('period') as 'today' | '7days' | '30days') || '30days'
+  const [period, setPeriod] = useState<'today' | '7days' | '30days' | 'overall'>(
+    (searchParams.get('period') as 'today' | '7days' | '30days' | 'overall') || '30days'
   )
   const [exerciseType, setExerciseType] = useState<string>(
     searchParams.get('exerciseType') || 'pushups'
@@ -106,6 +106,16 @@ function LeaderboardContent() {
               }`}
             >
               Past 30 Days
+            </button>
+            <button
+              onClick={() => setPeriod('overall')}
+              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                period === 'overall'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Overall
             </button>
           </div>
 
