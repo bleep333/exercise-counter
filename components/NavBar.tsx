@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react'
 
 export function NavBar() {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
 
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -67,7 +67,11 @@ export function NavBar() {
 
             {/* Separator + Profile / Auth */}
             <div className="ml-3 pl-3 border-l border-gray-200 h-8 flex items-center">
-              {session?.user ? (
+              {status === 'loading' ? (
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
+                </div>
+              ) : session?.user ? (
                 <div className="relative" ref={dropdownRef}>
                   {/* Avatar button */}
                   <button
