@@ -456,10 +456,16 @@ export default function GoalsPage() {
     setShowAddForm(true)
   }
 
-  const getExerciseTypes = () => {
-    const types = new Set(exercises.map(ex => ex.exerciseType))
-    return Array.from(types).sort()
-  }
+  // Common exercise types that should always be available
+  const commonExerciseTypes = ['pushups', 'situps', 'squats']
+  
+  // Get all available exercise types from database, combined with common types
+  const getAvailableExerciseTypes = useMemo(() => {
+    const dbTypes = new Set(exercises.map(ex => ex.exerciseType))
+    // Combine database types with common types
+    const allTypes = new Set([...commonExerciseTypes, ...dbTypes])
+    return Array.from(allTypes).sort()
+  }, [exercises])
 
   const filteredGoals = useMemo(() => {
     return goals.filter(goal => 
@@ -563,19 +569,11 @@ export default function GoalsPage() {
                   className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
                   required
                 >
-                  {getExerciseTypes().length > 0 ? (
-                    getExerciseTypes().map(type => (
-                      <option key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="pushups">Pushups</option>
-                      <option value="situps">Situps</option>
-                      <option value="squats">Squats</option>
-                    </>
-                  )}
+                  {getAvailableExerciseTypes.map(type => (
+                    <option key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
 
