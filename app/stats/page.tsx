@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { getGuestExercises, hasGuestExercises, clearGuestExercises, deleteGuestExercise, updateGuestExercise, saveGuestExercise, type GuestExercise } from '@/lib/guest'
 import { calculateCalories } from '@/lib/calories'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface Exercise {
   id: string
@@ -49,6 +50,8 @@ export default function StatsPage() {
   })
   const [addFormError, setAddFormError] = useState<string | null>(null)
   const [addingSession, setAddingSession] = useState(false)
+  const [selectedExerciseForGraph, setSelectedExerciseForGraph] = useState<string>('all')
+  const [graphTimeRange, setGraphTimeRange] = useState<'7days' | '30days' | 'year' | 'overall'>('30days')
 
   useEffect(() => {
     fetchExercises()
@@ -480,6 +483,95 @@ export default function StatsPage() {
   }
 
   const stats = getTotalStats()
+
+  // Process data for the line graph
+  const graphData = useMemo(() => {
+    if (exercises.length === 0) return []
+
+    // Filter by selected exercise
+    let filteredExercises = exercises
+    if (selectedExerciseForGraph !== 'all') {
+      filteredExercises = exercises.filter(ex => ex.exerciseType === selectedExerciseForGraph)
+    }
+
+    if (filteredExercises.length === 0) return []
+
+    // Calculate date range
+    const now = new Date()
+    let startDate: Date
+
+    switch (graphTimeRange) {
+      case '7days':
+        startDate = new Date(now)
+        startDate.setDate(startDate.getDate() - 7)
+        startDate.setHours(0, 0, 0, 0)
+        break
+      case '30days':
+        startDate = new Date(now)
+        startDate.setDate(startDate.getDate() - 30)
+        startDate.setHours(0, 0, 0, 0)
+        break
+      case 'year':
+        startDate = new Date(now)
+        startDate.setFullYear(startDate.getFullYear() - 1)
+        startDate.setHours(0, 0, 0, 0)
+        break
+      case 'overall':
+        // Start from earliest recorded rep
+        const earliestDate = new Date(Math.min(...filteredExercises.map(ex => new Date(ex.completedAt).getTime())))
+        startDate = new Date(earliestDate)
+        startDate.setHours(0, 0, 0, 0)
+        break
+    }
+
+    // Filter exercises within date range
+    const exercisesInRange = filteredExercises.filter(ex => {
+      const exDate = new Date(ex.completedAt)
+      return exDate >= startDate && exDate <= now
+    })
+
+    if (exercisesInRange.length === 0) return []
+
+    // Group by date and sum reps
+    const dateMap = new Map<string, number>()
+    
+    exercisesInRange.forEach(ex => {
+      const date = new Date(ex.completedAt)
+      const dateKey = date.toISOString().split('T')[0] // YYYY-MM-DD format
+      const currentReps = dateMap.get(dateKey) || 0
+      dateMap.set(dateKey, currentReps + ex.count)
+    })
+
+    // Convert to array and sort by date
+    const data = Array.from(dateMap.entries())
+      .map(([date, reps]) => {
+        const dateObj = new Date(date)
+        let displayDate: string
+        
+        if (graphTimeRange === '7days') {
+          // For 7 days, show day name and date
+          displayDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+        } else if (graphTimeRange === '30days') {
+          // For 30 days, show month and day
+          displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        } else if (graphTimeRange === 'year') {
+          // For year, show month, day, and year
+          displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        } else {
+          // For overall, show month, day, and year
+          displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        }
+        
+        return {
+          date,
+          reps,
+          displayDate
+        }
+      })
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    return data
+  }, [exercises, selectedExerciseForGraph, graphTimeRange])
 
   if (status === 'loading' || loading) {
     return (
@@ -1109,6 +1201,125 @@ export default function StatsPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Rep Count vs Date Line Graph */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg mt-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Rep Count Trends</h3>
+              
+              {/* Controls */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                {/* Exercise Selector */}
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Exercise</label>
+                  <select
+                    value={selectedExerciseForGraph}
+                    onChange={(e) => setSelectedExerciseForGraph(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
+                  >
+                    <option value="all">All Exercises</option>
+                    {exerciseTypes.map(type => (
+                      <option key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Time Range Buttons */}
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Time Range</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setGraphTimeRange('7days')}
+                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                        graphTimeRange === '7days'
+                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      7 Days
+                    </button>
+                    <button
+                      onClick={() => setGraphTimeRange('30days')}
+                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                        graphTimeRange === '30days'
+                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      30 Days
+                    </button>
+                    <button
+                      onClick={() => setGraphTimeRange('year')}
+                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                        graphTimeRange === 'year'
+                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Past Year
+                    </button>
+                    <button
+                      onClick={() => setGraphTimeRange('overall')}
+                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                        graphTimeRange === 'overall'
+                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Overall
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Graph */}
+              {graphData.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  <p>No data available for the selected filters.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={graphData} margin={{ top: 5, right: 30, left: 20, bottom: 80 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis 
+                      dataKey="displayDate" 
+                      stroke="#6b7280"
+                      style={{ fontSize: '12px' }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      interval={graphData.length > 30 ? Math.floor(graphData.length / 15) : 0}
+                    />
+                    <YAxis 
+                      label={{ value: 'Reps', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#6b7280' } }}
+                      stroke="#6b7280"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #e5e7eb', 
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                      labelStyle={{ color: '#374151', fontWeight: 'bold' }}
+                      formatter={(value: number | undefined) => [value?.toLocaleString() ?? '0', 'Reps']}
+                    />
+                    {/* <Legend /> */}
+                    <Line 
+                      type="monotone" 
+                      dataKey="reps" 
+                      stroke="#14b8a6" 
+                      strokeWidth={2}
+                      dot={{ fill: '#14b8a6', r: 4 }}
+                      activeDot={{ r: 6 }}
+                      name="Reps"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
             </div>
           )}
