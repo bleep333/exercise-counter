@@ -44,12 +44,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { exerciseType, count, duration, completedAt } = body
 
-    if (!exerciseType || count === undefined || duration === undefined || !completedAt) {
+    if (!exerciseType || count === undefined || !completedAt) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: exerciseType, count, completedAt' },
         { status: 400 }
       )
     }
+
+    // Duration is optional - default to 0 if not provided
+    const exerciseDuration = duration !== undefined && duration !== null ? duration : 0
 
     // If user is logged in, save to database
     // If not, this should not be called (client should use localStorage)
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         exerciseType,
         count,
-        duration,
+        duration: exerciseDuration,
         completedAt: new Date(completedAt),
       },
     })

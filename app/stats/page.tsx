@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { getGuestExercises, hasGuestExercises, clearGuestExercises, deleteGuestExercise, updateGuestExercise, type GuestExercise } from '@/lib/guest'
+import { getGuestExercises, hasGuestExercises, clearGuestExercises, deleteGuestExercise, updateGuestExercise, saveGuestExercise, type GuestExercise } from '@/lib/guest'
 import { calculateCalories } from '@/lib/calories'
 
 interface Exercise {
@@ -39,6 +39,16 @@ export default function StatsPage() {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
   const [editingRepId, setEditingRepId] = useState<string | null>(null)
   const [editingRepValue, setEditingRepValue] = useState<string>('')
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [addFormData, setAddFormData] = useState({
+    exerciseType: 'pushups',
+    count: '',
+    duration: '',
+    completedAt: new Date().toISOString().split('T')[0],
+    completedAtTime: new Date().toTimeString().slice(0, 5), // HH:MM format
+  })
+  const [addFormError, setAddFormError] = useState<string | null>(null)
+  const [addingSession, setAddingSession] = useState(false)
 
   useEffect(() => {
     fetchExercises()
@@ -186,6 +196,90 @@ export default function StatsPage() {
     }
   }
 
+  const handleAddSession = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAddFormError(null)
+
+    const count = parseInt(addFormData.count, 10)
+    if (isNaN(count) || count <= 0) {
+      setAddFormError('Please enter a valid rep count')
+      return
+    }
+
+    const duration = addFormData.duration ? parseInt(addFormData.duration, 10) * 1000 : 0 // Convert seconds to milliseconds
+    if (addFormData.duration && (isNaN(duration) || duration < 0)) {
+      setAddFormError('Please enter a valid duration in seconds')
+      return
+    }
+
+    // Combine date and time
+    const completedAt = new Date(`${addFormData.completedAt}T${addFormData.completedAtTime || '00:00'}`)
+    if (isNaN(completedAt.getTime())) {
+      setAddFormError('Please enter a valid date and time')
+      return
+    }
+
+    try {
+      setAddingSession(true)
+
+      if (session?.user) {
+        // Save to database
+        const response = await fetch('/api/exercises', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            exerciseType: addFormData.exerciseType,
+            count,
+            duration,
+            completedAt: completedAt.toISOString(),
+          }),
+        })
+
+        if (!response.ok) {
+          const data = await response.json()
+          throw new Error(data.error || 'Failed to save exercise')
+        }
+
+        const newExercise = await response.json()
+        setExercises(prev => [newExercise, ...prev])
+      } else {
+        // Save to localStorage for guest users
+        saveGuestExercise({
+          exerciseType: addFormData.exerciseType,
+          count,
+          duration,
+          completedAt: completedAt.toISOString(),
+        })
+
+        const newExercise: Exercise = {
+          id: `guest_ex_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          exerciseType: addFormData.exerciseType,
+          count,
+          duration,
+          completedAt: completedAt.toISOString(),
+          createdAt: new Date().toISOString(),
+        }
+
+        setExercises(prev => [newExercise, ...prev])
+      }
+
+      // Reset form
+      setAddFormData({
+        exerciseType: 'pushups',
+        count: '',
+        duration: '',
+        completedAt: new Date().toISOString().split('T')[0],
+        completedAtTime: new Date().toTimeString().slice(0, 5),
+      })
+      setShowAddForm(false)
+    } catch (err) {
+      console.error('Error adding session:', err)
+      setAddFormError(err instanceof Error ? err.message : 'Failed to add session')
+    } finally {
+      setAddingSession(false)
+    }
+  }
+
   const handleRepEditClick = (exerciseId: string, currentCount: number) => {
     setEditingRepId(exerciseId)
     setEditingRepValue(currentCount.toString())
@@ -268,6 +362,9 @@ export default function StatsPage() {
     const types = new Set(exercises.map(ex => ex.exerciseType))
     return Array.from(types).sort()
   }, [exercises])
+
+  // Common exercise types for the add form
+  const commonExerciseTypes = ['pushups', 'situps', 'squats']
 
   // Handle column header click for sorting
   const handleSort = (column: SortColumn) => {
@@ -509,56 +606,180 @@ export default function StatsPage() {
 
         {activeTab === 'history' ? (
           <>
-            {/* Filters */}
-            <div className="bg-white rounded-2xl p-4 sm:p-6 mb-6 shadow-lg">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-700">Filter by Exercise</label>
-                  <select
-                    value={filterExerciseType}
-                    onChange={(e) => setFilterExerciseType(e.target.value)}
-                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+            {/* Filters and Add Session */}
+            <div className="mb-6">
+              {!showAddForm ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <select
+                      value={filterExerciseType}
+                      onChange={(e) => setFilterExerciseType(e.target.value)}
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                    >
+                      <option value="all">All Exercises</option>
+                      {exerciseTypes.map(type => (
+                        <option key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="date"
+                      value={filterDateFrom}
+                      onChange={(e) => setFilterDateFrom(e.target.value)}
+                      placeholder="From"
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                    />
+                    <input
+                      type="date"
+                      value={filterDateTo}
+                      onChange={(e) => setFilterDateTo(e.target.value)}
+                      placeholder="To"
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                    />
+                    {(filterExerciseType !== 'all' || filterDateFrom || filterDateTo) && (
+                      <button
+                        onClick={() => {
+                          setFilterExerciseType('all')
+                          setFilterDateFrom('')
+                          setFilterDateTo('')
+                        }}
+                        className="px-3 py-1.5 text-xs text-purple-600 hover:text-purple-700 font-semibold"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setShowAddForm(true)}
+                    className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all"
                   >
-                    <option value="all">All Exercises</option>
-                    {exerciseTypes.map(type => (
-                      <option key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </option>
-                    ))}
-                  </select>
+                    + Add Session
+                  </button>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-700">From Date</label>
-                  <input
-                    type="date"
-                    value={filterDateFrom}
-                    onChange={(e) => setFilterDateFrom(e.target.value)}
-                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
-                  />
+              ) : (
+                <div className="bg-white rounded-xl p-4 shadow-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-bold text-gray-800">Add Session</h2>
+                    <button
+                      onClick={() => {
+                        setShowAddForm(false)
+                        setAddFormError(null)
+                        setAddFormData({
+                          exerciseType: 'pushups',
+                          count: '',
+                          duration: '',
+                          completedAt: new Date().toISOString().split('T')[0],
+                          completedAtTime: new Date().toTimeString().slice(0, 5),
+                        })
+                      }}
+                      className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {addFormError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg mb-3 text-xs">
+                      {addFormError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleAddSession} className="space-y-3">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-700">Exercise *</label>
+                        <select
+                          value={addFormData.exerciseType}
+                          onChange={(e) => setAddFormData({ ...addFormData, exerciseType: e.target.value })}
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          required
+                        >
+                          {commonExerciseTypes.map(type => (
+                            <option key={type} value={type}>
+                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-700">Reps *</label>
+                        <input
+                          type="number"
+                          value={addFormData.count}
+                          onChange={(e) => setAddFormData({ ...addFormData, count: e.target.value })}
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          min="1"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-700">Duration (s)</label>
+                        <input
+                          type="number"
+                          value={addFormData.duration}
+                          onChange={(e) => setAddFormData({ ...addFormData, duration: e.target.value })}
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          min="0"
+                          placeholder="Optional"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-700">Date *</label>
+                        <input
+                          type="date"
+                          value={addFormData.completedAt}
+                          onChange={(e) => setAddFormData({ ...addFormData, completedAt: e.target.value })}
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-700">Time</label>
+                        <input
+                          type="time"
+                          value={addFormData.completedAtTime}
+                          onChange={(e) => setAddFormData({ ...addFormData, completedAtTime: e.target.value })}
+                          className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={addingSession}
+                        className="px-4 py-1.5 text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {addingSession ? 'Adding...' : 'Add'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAddForm(false)
+                          setAddFormError(null)
+                          setAddFormData({
+                            exerciseType: 'pushups',
+                            count: '',
+                            duration: '',
+                            completedAt: new Date().toISOString().split('T')[0],
+                            completedAtTime: new Date().toTimeString().slice(0, 5),
+                          })
+                        }}
+                        className="px-4 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-700">To Date</label>
-                  <input
-                    type="date"
-                    value={filterDateTo}
-                    onChange={(e) => setFilterDateTo(e.target.value)}
-                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-600 transition-colors"
-                  />
-                </div>
-              </div>
-              {(filterExerciseType !== 'all' || filterDateFrom || filterDateTo) && (
-                <button
-                  onClick={() => {
-                    setFilterExerciseType('all')
-                    setFilterDateFrom('')
-                    setFilterDateTo('')
-                  }}
-                  className="mt-4 px-4 py-2 text-sm text-purple-600 hover:text-purple-700 font-semibold"
-                >
-                  Clear Filters
-                </button>
               )}
             </div>
+
 
             <div className="mt-8">
               {session?.user && !userWeight && (
