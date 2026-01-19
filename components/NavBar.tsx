@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useRef } from 'react'
@@ -39,9 +40,19 @@ export function NavBar() {
           {/* Logo */}
           <Link
             href="/"
-            className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+            className="flex items-center gap-2"
           >
-            💪 Exercise Counter
+            <Image
+              src="/logo.png"
+              alt="CleanReps"
+              width={48}
+              height={48}
+              className="h-12 w-auto"
+              priority
+            />
+            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              CleanReps
+            </span>
           </Link>
 
           {/* Links */}
@@ -49,7 +60,7 @@ export function NavBar() {
             {[
               ['/counter', 'Train'],
               ['/goals', 'Goals'],
-              ['/stats', 'Past Workouts'],
+              ['/stats', 'Workout History'],
               ['/leaderboard', 'Leaderboard'],
             ].map(([href, label], index, arr) => (
               <div key={href} className="flex items-center">
