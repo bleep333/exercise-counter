@@ -977,7 +977,10 @@ export default function GoalsPage() {
                               label={{ value: 'Reps', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#6b7280' } }}
                               stroke="#6b7280"
                               style={{ fontSize: '12px' }}
-                              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.4)]}
+                              domain={[0, (dataMax: number) => {
+                                const maxValue = Math.max(dataMax, selectedGoal.targetCount)
+                                return Math.ceil(maxValue * 1.4)
+                              }]}
                             />
                             <Tooltip 
                               contentStyle={{ 
