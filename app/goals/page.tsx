@@ -986,11 +986,29 @@ export default function GoalsPage() {
                                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                               }}
                               labelStyle={{ color: '#374151', fontWeight: 'bold' }}
-                              formatter={(value: number | undefined, name: string) => {
-                                if (name === 'target') {
-                                  return [value?.toLocaleString() ?? '0', 'Goal']
-                                }
-                                return [value?.toLocaleString() ?? '0', 'Reps']
+                              content={({ active, payload, label }) => {
+                                if (!active || !payload || !payload.length) return null
+                                
+                                // Filter out the target entry, only show reps
+                                const repsEntry = payload.find(entry => entry.dataKey === 'reps')
+                                if (!repsEntry) return null
+                                
+                                return (
+                                  <div style={{
+                                    backgroundColor: 'white',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    padding: '12px',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                  }}>
+                                    <p style={{ color: '#374151', fontWeight: 'bold', marginBottom: '8px' }}>
+                                      {label}
+                                    </p>
+                                    <p style={{ color: '#14b8a6', margin: 0 }}>
+                                      Reps: {typeof repsEntry.value === 'number' ? repsEntry.value.toLocaleString() : '0'}
+                                    </p>
+                                  </div>
+                                )
                               }}
                             />
                             <Legend />
