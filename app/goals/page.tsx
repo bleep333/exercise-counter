@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 interface Goal {
   id: string
@@ -956,7 +956,7 @@ export default function GoalsPage() {
                           {selectedGoal.period === 'day' ? 'Daily' : selectedGoal.period === 'week' ? 'Weekly' : 'Monthly'} Progress vs Goal
                         </h3>
                         <ResponsiveContainer width="100%" height={300}>
-                          <LineChart data={goalGraphData} margin={{ top: 5, right: 30, left: 20, bottom: 80 }}>
+                          <BarChart data={goalGraphData} margin={{ top: 5, right: 30, left: 20, bottom: 80 }} barCategoryGap="20%">
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                             <XAxis 
                               dataKey="displayDate" 
@@ -977,6 +977,7 @@ export default function GoalsPage() {
                               label={{ value: 'Reps', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#6b7280' } }}
                               stroke="#6b7280"
                               style={{ fontSize: '12px' }}
+                              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.4)]}
                             />
                             <Tooltip 
                               contentStyle={{ 
@@ -1012,25 +1013,26 @@ export default function GoalsPage() {
                               }}
                             />
                             <Legend />
-                            <Line 
-                              type="monotone" 
+                            <Bar 
                               dataKey="reps" 
-                              stroke="#14b8a6" 
-                              strokeWidth={2}
-                              dot={{ fill: '#14b8a6', r: 4 }}
-                              activeDot={{ r: 6 }}
+                              fill="#14b8a6" 
                               name="Actual Reps"
+                              radius={[4, 4, 0, 0]}
+                              barSize={40}
+                              activeBar={{ 
+                                fill: "#0d9488", 
+                                stroke: "#14b8a6",
+                                strokeWidth: 2
+                              }}
                             />
-                            <Line 
-                              type="monotone" 
-                              dataKey="target" 
+                            <ReferenceLine 
+                              y={selectedGoal.targetCount} 
                               stroke="#ef4444" 
                               strokeWidth={2}
                               strokeDasharray="5 5"
-                              dot={false}
-                              name="Goal Target"
+                              label={{ value: "Goal Target", position: "right", fill: "#ef4444", fontSize: 12 }}
                             />
-                          </LineChart>
+                          </BarChart>
                         </ResponsiveContainer>
                       </div>
                     )}
