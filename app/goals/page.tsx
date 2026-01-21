@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface Goal {
   id: string
@@ -473,6 +474,117 @@ export default function GoalsPage() {
     )
   }, [goals, activeTab])
 
+  // Generate graph data for the selected goal
+  const goalGraphData = useMemo(() => {
+    if (!selectedGoal) return []
+
+    const goalStartDate = new Date(selectedGoal.startDate)
+    goalStartDate.setHours(0, 0, 0, 0)
+    
+    // For archived goals, use updatedAt as end date if available, otherwise use current date
+    // For active goals, use current date
+    const endDate = selectedGoal.archived && selectedGoal.updatedAt 
+      ? new Date(selectedGoal.updatedAt)
+      : new Date()
+    endDate.setHours(23, 59, 59, 999)
+
+    // If goal hasn't started yet, return empty array
+    if (goalStartDate > endDate) return []
+
+    // Filter exercises for this goal's exercise type within the date range
+    const relevantExercises = exercises.filter(
+      ex => ex.exerciseType === selectedGoal.exerciseType &&
+      new Date(ex.completedAt) >= goalStartDate &&
+      new Date(ex.completedAt) <= endDate
+    )
+
+    // Helper function to get period start date based on goal period type
+    const getPeriodStart = (date: Date): Date => {
+      const periodStart = new Date(date)
+      switch (selectedGoal.period) {
+        case 'day':
+          periodStart.setHours(0, 0, 0, 0)
+          return periodStart
+        case 'week':
+          periodStart.setDate(periodStart.getDate() - periodStart.getDay()) // Start of week (Sunday)
+          periodStart.setHours(0, 0, 0, 0)
+          return periodStart
+        case 'month':
+          periodStart.setDate(1)
+          periodStart.setHours(0, 0, 0, 0)
+          return periodStart
+      }
+    }
+
+    // Helper function to get period key string
+    const getPeriodKey = (date: Date): string => {
+      const periodStart = getPeriodStart(date)
+      switch (selectedGoal.period) {
+        case 'day':
+          return periodStart.toISOString().split('T')[0] // YYYY-MM-DD
+        case 'week':
+          return periodStart.toISOString().split('T')[0] // YYYY-MM-DD of week start
+        case 'month':
+          return `${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}` // YYYY-MM
+      }
+    }
+
+    // Helper function to format display date based on period type
+    const formatDisplayDate = (periodStart: Date): string => {
+      switch (selectedGoal.period) {
+        case 'day':
+          return periodStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        case 'week':
+          return `Week of ${periodStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+        case 'month':
+          return periodStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      }
+    }
+
+    // Group exercises by period and sum reps
+    const periodMap = new Map<string, number>()
+    
+    relevantExercises.forEach(ex => {
+      const exDate = new Date(ex.completedAt)
+      const periodKey = getPeriodKey(exDate)
+      const currentReps = periodMap.get(periodKey) || 0
+      periodMap.set(periodKey, currentReps + ex.count)
+    })
+
+    // Generate data points for all periods from start to end
+    const data: Array<{ date: string; displayDate: string; reps: number; target: number }> = []
+    // Start from the period that contains the goal start date
+    let currentPeriodStart = getPeriodStart(new Date(goalStartDate))
+
+    while (currentPeriodStart <= endDate) {
+      const periodKey = getPeriodKey(currentPeriodStart)
+      const displayDate = formatDisplayDate(currentPeriodStart)
+      const reps = periodMap.get(periodKey) || 0
+      
+      data.push({
+        date: periodKey,
+        displayDate,
+        reps,
+        target: selectedGoal.targetCount
+      })
+
+      // Move to next period
+      switch (selectedGoal.period) {
+        case 'day':
+          currentPeriodStart.setDate(currentPeriodStart.getDate() + 1)
+          break
+        case 'week':
+          currentPeriodStart.setDate(currentPeriodStart.getDate() + 7)
+          break
+        case 'month':
+          currentPeriodStart.setMonth(currentPeriodStart.getMonth() + 1)
+          break
+      }
+    }
+
+    return data
+  }, [selectedGoal, exercises])
+
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
@@ -767,7 +879,7 @@ export default function GoalsPage() {
             onClick={() => setSelectedGoal(null)}
           >
             <div 
-              className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+              className="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
@@ -823,6 +935,10 @@ export default function GoalsPage() {
                     </div>
                   )
                 }
+
+                // Show graph if we have data
+                const showGraph = goalGraphData.length > 0
+
                 const history = getGoalHistory(selectedGoal)
                 if (history.length === 0) {
                   return (
@@ -832,32 +948,104 @@ export default function GoalsPage() {
                   )
                 }
                 return (
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-4 gap-2 font-semibold text-sm text-gray-700 pb-2 border-b">
-                      <div>Period</div>
-                      <div className="text-center">Status</div>
-                      <div className="text-center">Reps</div>
-                      <div className="text-center">Target</div>
+                  <div className="space-y-6">
+                    {/* Goal Progress Graph */}
+                    {showGraph && (
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">
+                          {selectedGoal.period === 'day' ? 'Daily' : selectedGoal.period === 'week' ? 'Weekly' : 'Monthly'} Progress vs Goal
+                        </h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <LineChart data={goalGraphData} margin={{ top: 5, right: 30, left: 20, bottom: 80 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis 
+                              dataKey="displayDate" 
+                              stroke="#6b7280"
+                              style={{ fontSize: '12px' }}
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                              interval={
+                                goalGraphData.length > 30 
+                                  ? Math.floor(goalGraphData.length / 15) 
+                                  : selectedGoal.period === 'month' && goalGraphData.length > 12
+                                  ? Math.floor(goalGraphData.length / 12)
+                                  : 0
+                              }
+                            />
+                            <YAxis 
+                              label={{ value: 'Reps', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#6b7280' } }}
+                              stroke="#6b7280"
+                              style={{ fontSize: '12px' }}
+                            />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'white', 
+                                border: '1px solid #e5e7eb', 
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                              }}
+                              labelStyle={{ color: '#374151', fontWeight: 'bold' }}
+                              formatter={(value: number | undefined, name: string) => {
+                                if (name === 'target') {
+                                  return [value?.toLocaleString() ?? '0', 'Goal']
+                                }
+                                return [value?.toLocaleString() ?? '0', 'Reps']
+                              }}
+                            />
+                            <Legend />
+                            <Line 
+                              type="monotone" 
+                              dataKey="reps" 
+                              stroke="#14b8a6" 
+                              strokeWidth={2}
+                              dot={{ fill: '#14b8a6', r: 4 }}
+                              activeDot={{ r: 6 }}
+                              name="Actual Reps"
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="target" 
+                              stroke="#ef4444" 
+                              strokeWidth={2}
+                              strokeDasharray="5 5"
+                              dot={false}
+                              name="Goal Target"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+
+                    {/* Period History Table */}
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-bold text-gray-800 mb-2">Period History</h3>
+                      <div className="grid grid-cols-4 gap-2 font-semibold text-sm text-gray-700 pb-2 border-b">
+                        <div>Period</div>
+                        <div className="text-center">Status</div>
+                        <div className="text-center">Reps</div>
+                        <div className="text-center">Target</div>
+                      </div>
+                      {history.map((entry, index) => (
+                        <div 
+                          key={index} 
+                          className={`grid grid-cols-4 gap-2 text-sm py-2 rounded ${
+                            entry.completed ? 'bg-green-50' : 'bg-gray-50'
+                          }`}
+                        >
+                          <div className="font-medium">{entry.period}</div>
+                          <div className="text-center">
+                            {entry.completed ? (
+                              <span className="text-green-600 font-semibold">✓ Completed</span>
+                            ) : (
+                              <span className="text-gray-500">Not met</span>
+                            )}
+                          </div>
+                          <div className="text-center font-semibold">{entry.count.toLocaleString()}</div>
+                          <div className="text-center text-gray-600">{entry.target.toLocaleString()}</div>
+                        </div>
+                      ))}
                     </div>
-                    {history.map((entry, index) => (
-                  <div 
-                    key={index} 
-                    className={`grid grid-cols-4 gap-2 text-sm py-2 rounded ${
-                      entry.completed ? 'bg-green-50' : 'bg-gray-50'
-                    }`}
-                  >
-                    <div className="font-medium">{entry.period}</div>
-                    <div className="text-center">
-                      {entry.completed ? (
-                        <span className="text-green-600 font-semibold">✓ Completed</span>
-                      ) : (
-                        <span className="text-gray-500">Not met</span>
-                      )}
-                    </div>
-                    <div className="text-center font-semibold">{entry.count.toLocaleString()}</div>
-                    <div className="text-center text-gray-600">{entry.target.toLocaleString()}                    </div>
-                  </div>
-                    ))}
                   </div>
                 )
               })()}
