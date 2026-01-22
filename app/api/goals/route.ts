@@ -76,13 +76,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for existing ACTIVE goals with the same exerciseType and period
+    // Exclude the goal being edited (if goalId is provided)
+    const whereClause: any = {
+      userId: session.user.id,
+      exerciseType,
+      period,
+      archived: false, // Only check active goals
+    }
+    
+    if (goalId) {
+      // Exclude the goal being edited from the conflict check
+      whereClause.id = { not: goalId }
+    }
+    
     const existingActiveGoals = await prisma.goal.findMany({
-      where: {
-        userId: session.user.id,
-        exerciseType,
-        period,
-        archived: false, // Only check active goals
-      },
+      where: whereClause,
     })
 
     // Parse startDate if provided, otherwise use current date
@@ -126,26 +134,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If active goals exist and user hasn't confirmed replacement, return error
-    if (existingActiveGoals.length > 0 && !confirmReplace) {
-      const existingGoal = existingActiveGoals[0]
-      const periodLabel = period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'
-      const exerciseLabel = exerciseType.charAt(0).toUpperCase() + exerciseType.slice(1)
-      
-      return NextResponse.json(
-        { 
-          error: 'ACTIVE_GOAL_EXISTS',
-          existingGoal: {
-            id: existingGoal.id,
-            targetCount: existingGoal.targetCount,
-            periodLabel,
-            exerciseLabel,
-          }
-        },
-        { status: 409 } // Conflict status code
-      )
-    }
-
     // If goalId is provided, we're editing an existing goal
     if (goalId) {
       // Verify the goal belongs to the user
@@ -167,16 +155,60 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Update the existing goal
+      // Check for conflicts only if exerciseType or period changed
+      const needsConflictCheck = existingGoal.exerciseType !== exerciseType || existingGoal.period !== period
+      
+      if (needsConflictCheck && existingActiveGoals.length > 0 && !confirmReplace) {
+        const periodLabel = period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'
+        const exerciseLabel = exerciseType.charAt(0).toUpperCase() + exerciseType.slice(1)
+        
+        return NextResponse.json(
+          { 
+            error: 'ACTIVE_GOAL_EXISTS',
+            existingGoal: {
+              id: existingActiveGoals[0].id,
+              targetCount: existingActiveGoals[0].targetCount,
+              periodLabel,
+              exerciseLabel,
+            }
+          },
+          { status: 409 } // Conflict status code
+        )
+      }
+
+      // Update the existing goal with all fields
       const goal = await prisma.goal.update({
         where: { id: goalId },
         data: {
+          exerciseType,
           targetCount,
+          period,
           startDate: parsedStartDate,
         },
       })
 
       return NextResponse.json({ goal })
+    }
+
+    // If active goals exist and user hasn't confirmed replacement, return error
+    // (This only applies when creating new goals, not editing)
+    if (existingActiveGoals.length > 0 && !confirmReplace) {
+      const existingGoal = existingActiveGoals[0]
+      const periodLabel = period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'
+      const exerciseLabel = exerciseType.charAt(0).toUpperCase() + exerciseType.slice(1)
+      
+      return NextResponse.json(
+        { 
+          error: 'ACTIVE_GOAL_EXISTS',
+          existingGoal: {
+            id: existingGoal.id,
+            targetCount: existingGoal.targetCount,
+            periodLabel,
+            exerciseLabel,
+          }
+        },
+        { status: 409 } // Conflict status code
+      )
     }
 
     // If user confirmed replacement, archive all existing active goals and create new one

@@ -58,58 +58,36 @@ async function main() {
     }
   }
 
-  // Create weekly pushup goal (40 pushups per week) if it doesn't exist
   const now = new Date()
-  const existingGoal = await prisma.goal.findUnique({
-    where: {
-      userId_exerciseType_period: {
-        userId: user.id,
-        exerciseType: 'pushups',
-        period: 'week',
-      },
-    },
-  })
-
-  if (!existingGoal) {
-    // Set start date to 8 weeks ago to match the test data
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - (8 * 7))
-    startDate.setHours(0, 0, 0, 0)
-    
-    const goal = await prisma.goal.create({
-      data: {
-        userId: user.id,
-        exerciseType: 'pushups',
-        targetCount: 40,
-        period: 'week',
-        startDate: startDate,
-      },
-    })
-    console.log('✅ Created weekly pushup goal: 40 pushups per week')
-  } else {
-    console.log('ℹ️  Weekly pushup goal already exists')
+  const exerciseTypes = ['pushups', 'situps', 'squats', 'pullups']
+  
+  // Helper function to get start of week (Sunday)
+  const getWeekStart = (date: Date): Date => {
+    const weekStart = new Date(date)
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay()) // Go to Sunday
+    weekStart.setHours(0, 0, 0, 0)
+    return weekStart
   }
 
-  // Check if 8-week test data already exists
+  // Check if 12-week test data already exists
   const existingExercises = await prisma.exercise.findMany({
     where: {
       userId: user.id,
-      exerciseType: 'pushups',
     },
     orderBy: {
       completedAt: 'desc',
     },
   })
 
-  // Check if we have exercises from 8+ weeks ago (indicating test data exists)
+  // Check if we have exercises from 12+ weeks ago (indicating test data exists)
   const hasTestData = existingExercises.some(ex => {
-    const eightWeeksAgo = new Date()
-    eightWeeksAgo.setDate(eightWeeksAgo.getDate() - (8 * 7))
-    return new Date(ex.completedAt) < eightWeeksAgo
+    const twelveWeeksAgo = new Date()
+    twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - (12 * 7))
+    return new Date(ex.completedAt) < twelveWeeksAgo
   })
 
   if (!hasTestData) {
-    console.log('📅 Creating 8 weeks of pushup test data...')
+    console.log('📅 Creating 12 weeks of exercise data for all exercise types...')
     
     const exercisesToCreate: Array<{
       userId: string
@@ -119,74 +97,83 @@ async function main() {
       completedAt: Date
     }> = []
 
-    // Helper function to get start of week (Sunday)
-    const getWeekStart = (date: Date): Date => {
-      const weekStart = new Date(date)
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay()) // Go to Sunday
-      weekStart.setHours(0, 0, 0, 0)
-      return weekStart
+    // Exercise-specific configurations
+    const exerciseConfig = {
+      pushups: {
+        sessionsPerWeek: [2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3], // Varying sessions
+        repsPerSession: [
+          [15, 20], [12, 15, 18], [18, 22], [15, 18, 20], [20, 25],
+          [15, 20, 22], [22, 28], [18, 22, 25], [25, 30], [20, 25, 28],
+          [28, 35], [25, 30, 35]
+        ],
+        secondsPerRep: 2.5,
+      },
+      situps: {
+        sessionsPerWeek: [2, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2],
+        repsPerSession: [
+          [20, 25], [25, 30], [20, 25, 30], [30, 35], [25, 30, 35],
+          [35, 40], [30, 35, 40], [40, 45], [35, 40, 45], [45, 50],
+          [40, 45, 50], [50, 55]
+        ],
+        secondsPerRep: 2.5,
+      },
+      squats: {
+        sessionsPerWeek: [2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3],
+        repsPerSession: [
+          [15, 20], [12, 15, 18], [18, 22], [15, 18, 20], [20, 25],
+          [15, 20, 22], [22, 28], [18, 22, 25], [25, 30], [20, 25, 28],
+          [28, 35], [25, 30, 35]
+        ],
+        secondsPerRep: 3.5,
+      },
+      pullups: {
+        sessionsPerWeek: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], // Fewer sessions (harder exercise)
+        repsPerSession: [
+          [5, 8], [6, 8], [5, 8, 10], [8, 10], [6, 10, 12],
+          [10, 12], [8, 12, 15], [12, 15], [10, 15, 18], [15, 18],
+          [12, 18, 20], [18, 20]
+        ],
+        secondsPerRep: 4.0,
+      },
     }
 
-    // Create exercises for 8 weeks (going backwards from current week)
-    // Week 1 (8 weeks ago): Complete ✓
-    // Week 2 (7 weeks ago): Skip ✗
-    // Week 3 (6 weeks ago): Skip ✗
-    // Week 4 (5 weeks ago): Complete ✓
-    // Week 5 (4 weeks ago): Complete ✓
-    // Week 6 (3 weeks ago): Skip ✗
-    // Week 7 (2 weeks ago): Complete ✓
-    // Week 8 (1 week ago / current week): Complete ✓
+    // Create exercises for all 12 weeks and all exercise types
+    for (let weekNum = 1; weekNum <= 12; weekNum++) {
+      const weeksBack = 12 - weekNum
+      const weekDate = new Date(now)
+      weekDate.setDate(weekDate.getDate() - (weeksBack * 7))
+      const weekStart = getWeekStart(weekDate)
 
-    const completedWeeks = [1, 4, 5, 7, 8] // Weeks to complete (1-indexed from 8 weeks ago)
+      // Create exercises for each type
+      for (const exerciseType of exerciseTypes) {
+        const config = exerciseConfig[exerciseType as keyof typeof exerciseConfig]
+        const sessionsInWeek = config.sessionsPerWeek[weekNum - 1]
+        const repsForWeek = config.repsPerSession[weekNum - 1]
 
-    for (let weekNum = 1; weekNum <= 8; weekNum++) {
-      if (completedWeeks.includes(weekNum)) {
-        // Calculate the start of this week (going back from now)
-        const weeksBack = 8 - weekNum
-        const weekDate = new Date(now)
-        weekDate.setDate(weekDate.getDate() - (weeksBack * 7))
-        const weekStart = getWeekStart(weekDate)
-        
-        // Add 2-3 exercise sessions within this week to total 40+ pushups
-        // Distribute them across the week (e.g., Monday, Wednesday, Friday)
-        const sessionsInWeek = weekNum === 8 ? 2 : 3 // Current week has 2 sessions, others have 3
-        
+        // Skip some weeks randomly to make it more realistic (70% completion rate)
+        const shouldSkip = Math.random() > 0.7
+        if (shouldSkip && weekNum > 2) continue // Don't skip first 2 weeks
+
         for (let session = 0; session < sessionsInWeek; session++) {
           const sessionDate = new Date(weekStart)
-          // Monday (1), Wednesday (3), Friday (5) for most weeks
-          // For current week, use more recent days
-          if (weekNum === 8) {
-            // Current week: use recent days
+          // Distribute sessions across the week (Monday, Wednesday, Friday pattern)
+          if (sessionsInWeek === 2) {
             sessionDate.setDate(sessionDate.getDate() + (session === 0 ? 1 : 4)) // Monday and Friday
           } else {
             sessionDate.setDate(sessionDate.getDate() + (session * 2 + 1)) // Monday, Wednesday, Friday
           }
-          sessionDate.setHours(10 + session, 30, 0, 0) // Different times throughout the day
+          
+          // Vary the time of day (morning, afternoon, evening)
+          const hour = 8 + (session * 4) + Math.floor(Math.random() * 2)
+          sessionDate.setHours(hour, 30 + Math.floor(Math.random() * 30), 0, 0)
 
-          // Each session contributes to the 40+ total
-          // Week 1: 15 + 15 + 15 = 45
-          // Week 4: 12 + 14 + 14 = 40
-          // Week 5: 13 + 13 + 15 = 41
-          // Week 7: 14 + 14 + 12 = 40
-          // Week 8: 20 + 25 = 45
-          const counts = [
-            [15, 15, 15], // Week 1
-            [0, 0, 0],     // Week 2 (skip)
-            [0, 0, 0],     // Week 3 (skip)
-            [12, 14, 14], // Week 4
-            [13, 13, 15], // Week 5
-            [0, 0, 0],     // Week 6 (skip)
-            [14, 14, 12], // Week 7
-            [20, 25, 0],  // Week 8 (only 2 sessions)
-          ]
-
-          const count = counts[weekNum - 1][session]
+          const count = repsForWeek[session]
           if (count > 0) {
             exercisesToCreate.push({
               userId: user.id,
-              exerciseType: 'pushups',
+              exerciseType,
               count,
-              duration: count * 3000, // ~3 seconds per pushup
+              duration: Math.round(count * config.secondsPerRep * 1000),
               completedAt: sessionDate,
             })
           }
@@ -194,24 +181,28 @@ async function main() {
       }
     }
 
-    // Create all exercises
-    for (const exerciseData of exercisesToCreate) {
-      await prisma.exercise.create({
-        data: exerciseData,
+    // Create all exercises in batches for better performance
+    const batchSize = 50
+    for (let i = 0; i < exercisesToCreate.length; i += batchSize) {
+      const batch = exercisesToCreate.slice(i, i + batchSize)
+      await prisma.exercise.createMany({
+        data: batch,
       })
     }
 
-    console.log(`✅ Created ${exercisesToCreate.length} workout sessions across 5 completed weeks`)
-    console.log('   Week 1: ✓ (45 pushups)')
-    console.log('   Week 2: ✗ (skipped)')
-    console.log('   Week 3: ✗ (skipped)')
-    console.log('   Week 4: ✓ (40 pushups)')
-    console.log('   Week 5: ✓ (41 pushups)')
-    console.log('   Week 6: ✗ (skipped)')
-    console.log('   Week 7: ✓ (40 pushups)')
-    console.log('   Week 8: ✓ (45 pushups)')
+    // Count exercises by type
+    const countsByType = exerciseTypes.reduce((acc, type) => {
+      acc[type] = exercisesToCreate.filter(ex => ex.exerciseType === type).length
+      return acc
+    }, {} as Record<string, number>)
+
+    console.log(`✅ Created ${exercisesToCreate.length} workout sessions across 12 weeks`)
+    console.log('   Exercise breakdown:')
+    for (const [type, count] of Object.entries(countsByType)) {
+      console.log(`   - ${type}: ${count} sessions`)
+    }
   } else {
-    console.log('ℹ️  8-week test data already exists')
+    console.log('ℹ️  12-week test data already exists')
   }
 
   console.log('🎉 Seed completed successfully!')

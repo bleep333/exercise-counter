@@ -368,7 +368,8 @@ export default function GoalsPage() {
 
       if (!response.ok) {
         // Check if backend also detected an active goal
-        if (response.status === 409 && responseData.error === 'ACTIVE_GOAL_EXISTS' && !confirmReplace) {
+        // Only show replace confirmation if we're NOT editing (creating a new goal)
+        if (response.status === 409 && responseData.error === 'ACTIVE_GOAL_EXISTS' && !confirmReplace && !isEdit) {
           const existingActiveGoal = goals.find(
             goal => 
               !goal.archived &&
@@ -475,6 +476,22 @@ export default function GoalsPage() {
       activeTab === 'active' ? !goal.archived : goal.archived
     )
   }, [goals, activeTab])
+
+  // Check if form data has changed from the original goal (when editing)
+  const hasGoalChanged = useMemo(() => {
+    if (!editingGoal) return true // Always allow creation
+    
+    const originalStartDate = editingGoal.startDate 
+      ? new Date(editingGoal.startDate).toISOString().split('T')[0] 
+      : new Date().toISOString().split('T')[0]
+    
+    return (
+      formData.exerciseType !== editingGoal.exerciseType ||
+      formData.targetCount !== editingGoal.targetCount ||
+      formData.period !== editingGoal.period ||
+      formData.startDate !== originalStartDate
+    )
+  }, [editingGoal, formData])
 
   // Generate graph data for the selected goal
   const goalGraphData = useMemo(() => {
@@ -733,7 +750,12 @@ export default function GoalsPage() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                disabled={editingGoal && !hasGoalChanged}
+                className={`w-full px-6 py-3 rounded-lg font-semibold transition-all ${
+                  editingGoal && !hasGoalChanged
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:shadow-lg hover:-translate-y-0.5'
+                }`}
               >
                 {editingGoal ? 'Update Goal' : 'Create Goal'}
               </button>
