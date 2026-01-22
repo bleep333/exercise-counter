@@ -54,6 +54,7 @@ export default function StatsPage() {
   const [addingSession, setAddingSession] = useState(false)
   const [selectedExerciseForGraph, setSelectedExerciseForGraph] = useState<string>('all')
   const [graphTimeRange, setGraphTimeRange] = useState<'7days' | '30days' | 'year' | 'overall'>('30days')
+  const [selectedExerciseForTrends, setSelectedExerciseForTrends] = useState<string>('all')
 
   useEffect(() => {
     fetchExercises()
@@ -444,6 +445,20 @@ export default function StatsPage() {
       }
     }
 
+    // Filter by selected exercise for trends
+    let filteredExercises = exercises
+    if (selectedExerciseForTrends !== 'all') {
+      filteredExercises = exercises.filter(ex => ex.exerciseType === selectedExerciseForTrends)
+    }
+
+    if (filteredExercises.length === 0) {
+      return {
+        daily: { count: 0, reps: 0, duration: 0 },
+        weekly: { count: 0, reps: 0, duration: 0 },
+        monthly: { count: 0, reps: 0, duration: 0 },
+      }
+    }
+
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const weekAgo = new Date(today)
@@ -451,9 +466,9 @@ export default function StatsPage() {
     const monthAgo = new Date(today)
     monthAgo.setMonth(monthAgo.getMonth() - 1)
 
-    const dailyExercises = exercises.filter(ex => new Date(ex.completedAt) >= today)
-    const weeklyExercises = exercises.filter(ex => new Date(ex.completedAt) >= weekAgo)
-    const monthlyExercises = exercises.filter(ex => new Date(ex.completedAt) >= monthAgo)
+    const dailyExercises = filteredExercises.filter(ex => new Date(ex.completedAt) >= today)
+    const weeklyExercises = filteredExercises.filter(ex => new Date(ex.completedAt) >= weekAgo)
+    const monthlyExercises = filteredExercises.filter(ex => new Date(ex.completedAt) >= monthAgo)
 
     const calculateAvg = (exs: Exercise[]) => {
       if (exs.length === 0) return { count: 0, reps: 0, duration: 0 }
@@ -474,7 +489,7 @@ export default function StatsPage() {
       weekly: calculateAvg(weeklyExercises),
       monthly: calculateAvg(monthlyExercises),
     }
-  }, [exercises])
+  }, [exercises, selectedExerciseForTrends])
 
   const getTotalStats = () => {
     const totalExercises = exercises.length
@@ -1168,6 +1183,24 @@ export default function StatsPage() {
         ) : (
           <div className="mt-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Exercise Trends</h2>
+            
+            {/* Exercise Selector for Trends */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Filter by Exercise</label>
+              <select
+                value={selectedExerciseForTrends}
+                onChange={(e) => setSelectedExerciseForTrends(e.target.value)}
+                className="w-full sm:w-auto px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
+              >
+                <option value="all">All Exercises</option>
+                {exerciseTypes.map(type => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {/* Daily */}
               <div className="bg-white rounded-2xl p-6 shadow-lg">
@@ -1229,7 +1262,7 @@ export default function StatsPage() {
 
             {/* Rep Count vs Date Line Graph */}
             <div className="bg-white rounded-2xl p-6 shadow-lg mt-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Rep Count Trends</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Trend Graph</h3>
               
               {/* Controls */}
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
