@@ -201,11 +201,17 @@ async function main() {
     console.log('ℹ️  12-week test data already exists for user1')
   }
 
-  // Create 3 additional users
+  // Create additional users
   const newUsers = [
     { email: 'user2@counter.com', name: 'User Two', profileName: 'FitnessFan', weight: Math.floor(Math.random() * 71) + 50 }, // 50-120
     { email: 'user3@counter.com', name: 'User Three', profileName: 'WorkoutWarrior', weight: Math.floor(Math.random() * 71) + 50 },
     { email: 'user4@counter.com', name: 'User Four', profileName: 'ExerciseElite', weight: Math.floor(Math.random() * 71) + 50 },
+    { email: 'user5@counter.com', name: 'User Five', profileName: 'StrengthSeeker', weight: Math.floor(Math.random() * 71) + 50 },
+    { email: 'user6@counter.com', name: 'User Six', profileName: 'ActiveAthlete', weight: Math.floor(Math.random() * 71) + 50 },
+    { email: 'user7@counter.com', name: 'User Seven', profileName: 'PowerPlayer', weight: Math.floor(Math.random() * 71) + 50 },
+    { email: 'user8@counter.com', name: 'User Eight', profileName: 'FitFighter', weight: Math.floor(Math.random() * 71) + 50 },
+    { email: 'user9@counter.com', name: 'User Nine', profileName: 'MuscleMaster', weight: Math.floor(Math.random() * 71) + 50 },
+    { email: 'user10@counter.com', name: 'User Ten', profileName: 'EnduranceExpert', weight: Math.floor(Math.random() * 71) + 50 },
   ]
 
   for (const userData of newUsers) {
