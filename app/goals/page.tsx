@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { getExerciseIconPath } from '@/lib/exercise-icons'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 interface Goal {
@@ -776,9 +778,20 @@ export default function GoalsPage() {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
                     <div className="flex-1">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
-                        {goal.exerciseType.charAt(0).toUpperCase() + goal.exerciseType.slice(1)}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        {getExerciseIconPath(goal.exerciseType) ? (
+                          <Image 
+                            src={getExerciseIconPath(goal.exerciseType)!} 
+                            alt={`${goal.exerciseType} icon`} 
+                            width={24} 
+                            height={24}
+                            className="w-6 h-6"
+                          />
+                        ) : null}
+                        <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                          {goal.exerciseType.charAt(0).toUpperCase() + goal.exerciseType.slice(1)}
+                        </h3>
+                      </div>
                       <p className="text-sm text-gray-600">
                         {periodLabel} target: {goal.targetCount.toLocaleString()} reps
                       </p>
@@ -883,9 +896,20 @@ export default function GoalsPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {selectedGoal.exerciseType.charAt(0).toUpperCase() + selectedGoal.exerciseType.slice(1)} Goal History
-                </h2>
+                <div className="flex items-center gap-2">
+                  {getExerciseIconPath(selectedGoal.exerciseType) ? (
+                    <Image 
+                      src={getExerciseIconPath(selectedGoal.exerciseType)!} 
+                      alt={`${selectedGoal.exerciseType} icon`} 
+                      width={28} 
+                      height={28}
+                      className="w-7 h-7"
+                    />
+                  ) : null}
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {selectedGoal.exerciseType.charAt(0).toUpperCase() + selectedGoal.exerciseType.slice(1)} Goal History
+                  </h2>
+                </div>
                 <button
                   onClick={() => setSelectedGoal(null)}
                   className="text-gray-500 hover:text-gray-700 text-2xl font-bold"

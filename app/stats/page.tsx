@@ -3,8 +3,10 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { getGuestExercises, hasGuestExercises, clearGuestExercises, deleteGuestExercise, updateGuestExercise, saveGuestExercise, type GuestExercise } from '@/lib/guest'
 import { calculateCalories } from '@/lib/calories'
+import { getExerciseIconPath } from '@/lib/exercise-icons'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface Exercise {
@@ -367,7 +369,7 @@ export default function StatsPage() {
   }, [exercises])
 
   // Common exercise types for the add form
-  const commonExerciseTypes = ['pushups', 'situps', 'squats']
+  const commonExerciseTypes = ['pushups', 'situps', 'squats', 'pullups']
 
   // Handle column header click for sorting
   const handleSort = (column: SortColumn) => {
@@ -655,7 +657,19 @@ export default function StatsPage() {
             <div className="text-xs sm:text-sm text-gray-600 font-semibold">Total Sessions</div>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-            <div className="text-2xl sm:text-3xl mb-2">💪</div>
+            <div className="mb-2 flex items-center justify-center">
+              {getExerciseIconPath('pushups') ? (
+                <Image 
+                  src={getExerciseIconPath('pushups')!} 
+                  alt="Exercise icon" 
+                  width={32} 
+                  height={32}
+                  className="w-6 h-6 sm:w-8 sm:h-8"
+                />
+              ) : (
+                <span className="text-2xl sm:text-3xl">💪</span>
+              )}
+            </div>
             <div className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">{stats.totalReps}</div>
             <div className="text-xs sm:text-sm text-gray-600 font-semibold">Total Reps</div>
           </div>
@@ -1037,7 +1051,17 @@ export default function StatsPage() {
                               >
                                 <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900">
                                   <div className="flex items-center gap-1 sm:gap-2">
-                                    <span className="text-sm sm:text-base">{exercise.exerciseType === 'pushups' ? '💪' : '🏋️'}</span>
+                                    {getExerciseIconPath(exercise.exerciseType) ? (
+                                      <Image 
+                                        src={getExerciseIconPath(exercise.exerciseType)!} 
+                                        alt={`${exercise.exerciseType} icon`} 
+                                        width={16} 
+                                        height={16}
+                                        className="w-4 h-4 sm:w-5 sm:h-5"
+                                      />
+                                    ) : (
+                                      <span className="text-sm sm:text-base">{exercise.exerciseType === 'pushups' ? '💪' : '🏋️'}</span>
+                                    )}
                                     <span className="truncate">{exercise.exerciseType.charAt(0).toUpperCase() + exercise.exerciseType.slice(1)}</span>
                                   </div>
                                 </td>

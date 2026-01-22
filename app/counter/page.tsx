@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
+import { getExerciseIconPath } from '@/lib/exercise-icons'
 
 export default function CounterPage() {
   return (
@@ -19,7 +21,19 @@ export default function CounterPage() {
             className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group flex flex-col items-center"
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-600 to-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-            <div className="text-5xl sm:text-6xl mb-4">💪</div>
+            <div className="mb-4 flex items-center justify-center">
+              {getExerciseIconPath('pushups') ? (
+                <Image 
+                  src={getExerciseIconPath('pushups')!} 
+                  alt="Pushups icon" 
+                  width={64} 
+                  height={64}
+                  className="w-12 h-12 sm:w-16 sm:h-16"
+                />
+              ) : (
+                <span className="text-5xl sm:text-6xl">💪</span>
+              )}
+            </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Pushups</h2>
             <p className="text-gray-600 text-sm sm:text-base mb-6 leading-relaxed flex-grow">
               Track your pushups with real-time pose detection
@@ -30,7 +44,19 @@ export default function CounterPage() {
           </Link>
           
           <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg opacity-60 cursor-not-allowed flex flex-col items-center">
-            <div className="text-5xl sm:text-6xl mb-4">🏋️</div>
+            <div className="mb-4 flex items-center justify-center">
+              {getExerciseIconPath('pullups') ? (
+                <Image
+                  src={getExerciseIconPath('pullups')!}
+                  alt="Pullups icon"
+                  width={64}
+                  height={64}
+                  className="w-12 h-12 sm:w-16 sm:h-16"
+                />
+              ) : (
+                <span className="text-5xl sm:text-6xl">🏋️</span>
+              )}
+            </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Pullups</h2>
             <p className="text-gray-600 text-sm sm:text-base mb-6 leading-relaxed flex-grow">
               Coming soon - track your pullups
@@ -41,7 +67,19 @@ export default function CounterPage() {
           </div>
           
           <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg opacity-60 cursor-not-allowed flex flex-col items-center">
-            <div className="text-5xl sm:text-6xl mb-4">🧘</div>
+            <div className="mb-4 flex items-center justify-center">
+              {getExerciseIconPath('situps') ? (
+                <Image 
+                  src={getExerciseIconPath('situps')!} 
+                  alt="Situps icon" 
+                  width={64} 
+                  height={64}
+                  className="w-12 h-12 sm:w-16 sm:h-16"
+                />
+              ) : (
+                <span className="text-5xl sm:text-6xl">🧘</span>
+              )}
+            </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Situps</h2>
             <p className="text-gray-600 text-sm sm:text-base mb-6 leading-relaxed flex-grow">
               Coming soon - track your situps
