@@ -43,7 +43,7 @@ export function NavBar() {
             className="flex items-center gap-2"
           >
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="CleanReps"
               width={48}
               height={48}
