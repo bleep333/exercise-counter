@@ -55,6 +55,8 @@ export default function StatsPage() {
   const [selectedExerciseForGraph, setSelectedExerciseForGraph] = useState<string>('all')
   const [graphTimeRange, setGraphTimeRange] = useState<'7days' | '30days' | 'year' | 'overall'>('30days')
   const [selectedExerciseForTrends, setSelectedExerciseForTrends] = useState<string>('all')
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(10)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     fetchExercises()
@@ -536,6 +538,26 @@ export default function StatsPage() {
     return { totalExercises, totalReps, totalDuration }
   }, [filteredAndSortedExercises])
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filterExerciseType, filterDateFrom, filterDateTo, sortColumn, sortDirection])
+
+  // Calculate pagination
+  const paginatedExercises = useMemo(() => {
+    if (itemsPerPage === 'all') {
+      return filteredAndSortedExercises
+    }
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredAndSortedExercises.slice(startIndex, endIndex)
+  }, [filteredAndSortedExercises, currentPage, itemsPerPage])
+
+  const totalPages = useMemo(() => {
+    if (itemsPerPage === 'all') return 1
+    return Math.ceil(filteredAndSortedExercises.length / itemsPerPage)
+  }, [filteredAndSortedExercises.length, itemsPerPage])
+
   // Process data for the line graph
   const graphData = useMemo(() => {
     if (exercises.length === 0) return []
@@ -960,11 +982,31 @@ export default function StatsPage() {
                 </div>
               )}
               <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                {filteredAndSortedExercises.length !== exercises.length && (
-                  <div className="text-sm text-gray-500">
-                    Showing {filteredAndSortedExercises.length} of {exercises.length} exercises
+                <div className="flex flex-wrap items-center gap-3">
+                  {filteredAndSortedExercises.length !== exercises.length && (
+                    <div className="text-sm text-gray-500">
+                      {filteredAndSortedExercises.length} of {exercises.length} exercises
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-700 font-medium">Show:</label>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value, 10)
+                        setItemsPerPage(value)
+                        setCurrentPage(1)
+                      }}
+                      className="px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-600 transition-colors"
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value="all">All</option>
+                    </select>
                   </div>
-                )}
+                </div>
                 {!session?.user && exercises.length > 0 && (
                   <div className="flex items-center gap-2 self-start sm:self-auto">
                     {confirmingClearAll ? (
@@ -1091,7 +1133,7 @@ export default function StatsPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {filteredAndSortedExercises.map((exercise) => {
+                          {paginatedExercises.map((exercise) => {
                             const calories = calculateCalories(exercise.exerciseType, exercise.count, userWeight)
                             const isDeleting = deletingIds.has(exercise.id)
                             return (
@@ -1211,6 +1253,72 @@ export default function StatsPage() {
                       </table>
                     </div>
                   </div>
+                  
+                  {/* Pagination Controls */}
+                  {itemsPerPage !== 'all' && totalPages > 1 && (
+                    <div className="px-4 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredAndSortedExercises.length)} of {filteredAndSortedExercises.length} entries
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCurrentPage(1)}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          First
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let pageNum: number
+                            if (totalPages <= 5) {
+                              pageNum = i + 1
+                            } else if (currentPage <= 3) {
+                              pageNum = i + 1
+                            } else if (currentPage >= totalPages - 2) {
+                              pageNum = totalPages - 4 + i
+                            } else {
+                              pageNum = currentPage - 2 + i
+                            }
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => setCurrentPage(pageNum)}
+                                className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+                                  currentPage === pageNum
+                                    ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white'
+                                    : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage(totalPages)}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Last
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
