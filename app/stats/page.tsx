@@ -363,6 +363,42 @@ export default function StatsPage() {
     return `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
+  const formatTotalTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000)
+    const totalMinutes = Math.floor(totalSeconds / 60)
+    const totalHours = Math.floor(totalMinutes / 60)
+    const days = Math.floor(totalHours / 24)
+    
+    if (days >= 1) {
+      // 24+ hours: show as days, hours, and minutes
+      const hours = totalHours % 24
+      const minutes = totalMinutes % 60
+      if (hours === 0 && minutes === 0) {
+        return `${days}d`
+      } else if (minutes === 0) {
+        return `${days}d ${hours}h`
+      } else {
+        return `${days}d ${hours}h ${minutes}m`
+      }
+    } else if (totalHours >= 1) {
+      // 60+ minutes but less than 24 hours: show as hours and minutes
+      const minutes = totalMinutes % 60
+      if (minutes === 0) {
+        return `${totalHours}h`
+      } else {
+        return `${totalHours}h ${minutes}m`
+      }
+    } else {
+      // Less than 1 hour: show as minutes and seconds
+      const seconds = totalSeconds % 60
+      if (seconds === 0) {
+        return `${totalMinutes}m`
+      } else {
+        return `${totalMinutes}m ${seconds.toString().padStart(2, '0')}s`
+      }
+    }
+  }
+
   // Get unique exercise types
   const exerciseTypes = useMemo(() => {
     const types = new Set(exercises.map(ex => ex.exerciseType))
@@ -491,15 +527,14 @@ export default function StatsPage() {
     }
   }, [exercises, selectedExerciseForTrends])
 
-  const getTotalStats = () => {
-    const totalExercises = exercises.length
-    const totalReps = exercises.reduce((sum, ex) => sum + ex.count, 0)
-    const totalDuration = exercises.reduce((sum, ex) => sum + ex.duration, 0)
+  // Calculate stats based on filtered exercises
+  const stats = useMemo(() => {
+    const totalExercises = filteredAndSortedExercises.length
+    const totalReps = filteredAndSortedExercises.reduce((sum, ex) => sum + ex.count, 0)
+    const totalDuration = filteredAndSortedExercises.reduce((sum, ex) => sum + ex.duration, 0)
     
     return { totalExercises, totalReps, totalDuration }
-  }
-
-  const stats = getTotalStats()
+  }, [filteredAndSortedExercises])
 
   // Process data for the line graph
   const graphData = useMemo(() => {
@@ -664,36 +699,6 @@ export default function StatsPage() {
           </div>
           )
         })()}
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-            <div className="text-2xl sm:text-3xl mb-2">📊</div>
-            <div className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">{stats.totalExercises}</div>
-            <div className="text-xs sm:text-sm text-gray-600 font-semibold">Total Sessions</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-            <div className="mb-2 flex items-center justify-center">
-              {getExerciseIconPath('pushups') ? (
-                <Image 
-                  src={getExerciseIconPath('pushups')!} 
-                  alt="Exercise icon" 
-                  width={32} 
-                  height={32}
-                  className="w-6 h-6 sm:w-8 sm:h-8"
-                />
-              ) : (
-                <span className="text-2xl sm:text-3xl">💪</span>
-              )}
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">{stats.totalReps}</div>
-            <div className="text-xs sm:text-sm text-gray-600 font-semibold">Total Reps</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 text-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-            <div className="text-2xl sm:text-3xl mb-2">⏱️</div>
-            <div className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">{formatDuration(stats.totalDuration)}</div>
-            <div className="text-xs sm:text-sm text-gray-600 font-semibold">Total Time</div>
-          </div>
-        </div>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 border-b border-gray-200">
@@ -901,6 +906,36 @@ export default function StatsPage() {
               )}
             </div>
 
+            {/* Filtered Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-6">
+              <div className="bg-white rounded-lg p-3 text-center shadow-md">
+                <div className="text-lg mb-1">📊</div>
+                <div className="text-lg font-bold text-gray-800 mb-0.5">{stats.totalExercises}</div>
+                <div className="text-xs text-gray-600 font-medium">Total Sessions</div>
+              </div>
+              <div className="bg-white rounded-lg p-3 text-center shadow-md">
+                <div className="mb-1 flex items-center justify-center">
+                  {getExerciseIconPath(filterExerciseType === 'all' ? 'pushups' : filterExerciseType) ? (
+                    <Image 
+                      src={getExerciseIconPath(filterExerciseType === 'all' ? 'pushups' : filterExerciseType)!} 
+                      alt="Exercise icon" 
+                      width={20} 
+                      height={20}
+                      className="w-5 h-5"
+                    />
+                  ) : (
+                    <span className="text-lg">💪</span>
+                  )}
+                </div>
+                <div className="text-lg font-bold text-gray-800 mb-0.5">{stats.totalReps}</div>
+                <div className="text-xs text-gray-600 font-medium">Total Reps</div>
+              </div>
+              <div className="bg-white rounded-lg p-3 text-center shadow-md">
+                <div className="text-lg mb-1">⏱️</div>
+                <div className="text-lg font-bold text-gray-800 mb-0.5">{formatTotalTime(stats.totalDuration)}</div>
+                <div className="text-xs text-gray-600 font-medium">Total Time</div>
+              </div>
+            </div>
 
             <div className="mt-8">
               {session?.user && !userWeight && (
