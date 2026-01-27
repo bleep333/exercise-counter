@@ -750,7 +750,7 @@ export default function GoalsPage() {
 
               <button
                 type="submit"
-                disabled={editingGoal && !hasGoalChanged}
+                disabled={editingGoal ? !hasGoalChanged : false}
                 className={`w-full px-6 py-3 rounded-lg font-semibold transition-all ${
                   editingGoal && !hasGoalChanged
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
