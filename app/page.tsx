@@ -1,12 +1,28 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Home() {
   return (
-    <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 sm:px-6 lg:px-8">
+    <main 
+      className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 sm:px-6 lg:px-8"
+      style={{
+        backgroundImage: 'url(/landing-background.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       <div className="w-full max-w-xl text-center">
-        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">
-          Rep Counter
-        </h1>
+
+        <div className="flex justify-center">
+            <Image
+              src="/landing-track-icon.svg"
+              alt="Tracking visualization"
+              width={75}
+              height={12}
+              className="opacity-60"
+            />
+        </div>
 
         <div className="mt-5">
           <Link
@@ -20,6 +36,7 @@ export default function Home() {
         <p className="mt-4 text-sm text-gray-500">
           AI-powered bodyweight rep counter using your camera
         </p>
+        
       </div>
     </main>
   )
