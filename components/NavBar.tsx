@@ -66,9 +66,9 @@ export function NavBar() {
               <div key={href} className="flex items-center">
                 <Link
                   href={href}
-                  className={`px-3 py-2 rounded-lg font-semibold text-sm transition ${
+                  className={`px-4 py-2 rounded-full font-semibold text-sm transition ${
                     pathname === href
-                      ? 'text-teal-600 bg-teal-50'
+                      ? 'text-teal-700 bg-teal-100 border-2 border-teal-400 shadow-sm'
                       : 'text-gray-600 hover:text-teal-600 hover:bg-teal-50'
                   }`}
                 >
