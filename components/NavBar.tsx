@@ -12,34 +12,46 @@ export function NavBar() {
 
   const [open, setOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const mobileDropdownRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(target) &&
+        open
       ) {
         setOpen(false)
       }
       if (
+        mobileDropdownRef.current &&
+        !mobileDropdownRef.current.contains(target) &&
+        mobileDropdownOpen
+      ) {
+        setMobileDropdownOpen(false)
+      }
+      if (
         mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(event.target as Node)
+        !mobileMenuRef.current.contains(target) &&
+        mobileMenuOpen
       ) {
         setMobileMenuOpen(false)
       }
     }
 
-    if (open || mobileMenuOpen) {
+    if (open || mobileDropdownOpen || mobileMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [open, mobileMenuOpen])
+  }, [open, mobileDropdownOpen, mobileMenuOpen])
 
   const navLinks = [
     ['/counter', 'Train'],
@@ -135,17 +147,27 @@ export function NavBar() {
 
                   {/* Dropdown */}
                   {open && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-lg z-50">
+                    <div 
+                      className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-lg z-50"
+                      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                    >
                       <Link
                         href="/account"
-                        onClick={() => setOpen(false)}
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation()
+                          setOpen(false)
+                        }}
                         className="block px-4 py-2 text-sm hover:bg-teal-50"
                       >
                         Profile
                       </Link>
 
                       <button
-                        onClick={() => signOut({ callbackUrl: '/' })}
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation()
+                          setOpen(false)
+                          signOut({ callbackUrl: '/' })
+                        }}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
                         Sign out
@@ -171,10 +193,10 @@ export function NavBar() {
                 <div className="w-5 h-5 border-2 border-gray-300 border-t-teal-600 rounded-full animate-spin" />
               </div>
             ) : session?.user ? (
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative" ref={mobileDropdownRef}>
                 <button
                   type="button"
-                  onClick={() => setOpen((v) => !v)}
+                  onClick={() => setMobileDropdownOpen((v) => !v)}
                   className={`w-11 h-11 rounded-full border-2 overflow-hidden transition ${
                     pathname === '/account'
                       ? 'border-teal-600 bg-teal-50 ring-2 ring-teal-200'
@@ -204,18 +226,28 @@ export function NavBar() {
                   )}
                 </button>
 
-                {open && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-lg z-50">
+                {mobileDropdownOpen && (
+                  <div 
+                    className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-lg z-50"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  >
                     <Link
                       href="/account"
-                      onClick={() => setOpen(false)}
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation()
+                        setMobileDropdownOpen(false)
+                      }}
                       className="block px-4 py-3 text-sm hover:bg-teal-50"
                     >
                       Account
                     </Link>
 
                     <button
-                      onClick={() => signOut({ callbackUrl: '/' })}
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation()
+                        setMobileDropdownOpen(false)
+                        signOut({ callbackUrl: '/' })
+                      }}
                       className="block w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50"
                     >
                       Sign out

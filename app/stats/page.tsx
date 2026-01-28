@@ -1055,10 +1055,10 @@ export default function StatsPage() {
                       <table className="min-w-full table-fixed">
                         <colgroup>
                           <col className="w-[18%] sm:w-[22%]" />
+                          <col className="w-[12%] sm:w-[12%]" />
+                          <col className="w-[12%] sm:w-[12%]" />
+                          <col className="w-[12%] sm:w-[12%]" />
                           <col className="w-[22%] sm:w-[22%]" />
-                          <col className="w-[12%] sm:w-[12%]" />
-                          <col className="w-[12%] sm:w-[12%]" />
-                          <col className="w-[20%] sm:w-[18%]" />
                           <col style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }} />
                         </colgroup>
                         <thead className="bg-gray-50">
@@ -1070,19 +1070,6 @@ export default function StatsPage() {
                               <div className="flex items-center gap-1 sm:gap-2">
                                 Exercise
                                 {sortColumn === 'exercise' && (
-                                  <span className="text-teal-600 text-xs sm:text-sm">
-                                    {sortDirection === 'asc' ? '↑' : '↓'}
-                                  </span>
-                                )}
-                              </div>
-                            </th>
-                            <th
-                              onClick={() => handleSort('date')}
-                              className="px-2 sm:px-4 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors select-none touch-manipulation"
-                            >
-                              <div className="flex items-center gap-1 sm:gap-2">
-                                Date
-                                {sortColumn === 'date' && (
                                   <span className="text-teal-600 text-xs sm:text-sm">
                                     {sortDirection === 'asc' ? '↑' : '↓'}
                                   </span>
@@ -1128,6 +1115,19 @@ export default function StatsPage() {
                                 )}
                               </div>
                             </th>
+                            <th
+                              onClick={() => handleSort('date')}
+                              className="px-2 sm:px-4 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-gray-200 transition-colors select-none touch-manipulation"
+                            >
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                Date
+                                {sortColumn === 'date' && (
+                                  <span className="text-teal-600 text-xs sm:text-sm">
+                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
                             <th className="px-1 py-3 sm:py-4 text-center text-xs sm:text-sm font-semibold text-gray-700" style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
                             </th>
                           </tr>
@@ -1156,9 +1156,6 @@ export default function StatsPage() {
                                     )}
                                     <span className="truncate">{exercise.exerciseType.charAt(0).toUpperCase() + exercise.exerciseType.slice(1)}</span>
                                   </div>
-                                </td>
-                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
-                                  <span className="whitespace-nowrap">{formatDate(exercise.completedAt)}</span>
                                 </td>
                                 <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-teal-600 whitespace-nowrap">
                                   {editingRepId === exercise.id ? (
@@ -1212,6 +1209,9 @@ export default function StatsPage() {
                                   ) : (
                                     <span className="text-gray-400 italic">Unavailable</span>
                                   )}
+                                </td>
+                                <td className="px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
+                                  <span className="whitespace-nowrap">{formatDate(exercise.completedAt)}</span>
                                 </td>
                                 <td className="px-1 py-3 sm:py-4 text-center" style={{ width: '70px', minWidth: '70px', maxWidth: '70px', tableLayout: 'fixed' }}>
                                   <div className="flex items-center justify-center w-full" style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
