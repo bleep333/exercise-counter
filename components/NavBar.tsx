@@ -94,7 +94,11 @@ export function NavBar() {
                   <button
                     type="button"
                     onClick={() => setOpen((v) => !v)}
-                    className="w-10 h-10 rounded-full border-2 border-gray-300 overflow-hidden hover:border-teal-500"
+                    className={`w-10 h-10 rounded-full border-2 overflow-hidden transition ${
+                      pathname === '/account'
+                        ? 'border-teal-600 bg-teal-50 ring-2 ring-teal-200'
+                        : 'border-gray-300 hover:border-teal-500'
+                    }`}
                   >
                     {session.user.image ? (
                       <img
