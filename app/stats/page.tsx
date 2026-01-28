@@ -672,9 +672,9 @@ export default function StatsPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
+    <div className="min-h-[calc(100vh-4rem)] py-6 sm:py-8 lg:py-12 px-4 sm:px-6 lg:px-8 flex justify-center overflow-x-hidden">
       <div className="max-w-5xl w-full">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-6 sm:mb-8 text-center">
           Session History
         </h1>
         
@@ -726,7 +726,7 @@ export default function StatsPage() {
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-6 py-3 font-semibold transition-all relative ${
+            className={`px-4 sm:px-6 py-3 font-semibold transition-all relative min-h-[44px] ${
               activeTab === 'history'
                 ? 'text-teal-600'
                 : 'text-gray-600 hover:text-teal-600'
@@ -739,7 +739,7 @@ export default function StatsPage() {
           </button>
           <button
             onClick={() => setActiveTab('trends')}
-            className={`px-6 py-3 font-semibold transition-all relative ${
+            className={`px-4 sm:px-6 py-3 font-semibold transition-all relative min-h-[44px] ${
               activeTab === 'trends'
                 ? 'text-teal-600'
                 : 'text-gray-600 hover:text-teal-600'
@@ -800,7 +800,7 @@ export default function StatsPage() {
                   </div>
                   <button
                     onClick={() => setShowAddForm(true)}
-                    className="px-4 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all"
+                    className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all min-h-[44px]"
                   >
                     + Add Session
                   </button>
@@ -929,7 +929,7 @@ export default function StatsPage() {
             </div>
 
             {/* Filtered Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
               <div className="bg-white rounded-lg p-3 text-center shadow-md">
                 <div className="text-lg mb-1">📊</div>
                 <div className="text-lg font-bold text-gray-800 mb-0.5">{stats.totalExercises}</div>
@@ -1050,7 +1050,7 @@ export default function StatsPage() {
                 </div>
               ) : (
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                     <div className="inline-block min-w-full align-middle">
                       <table className="min-w-full table-fixed">
                         <colgroup>
@@ -1344,7 +1344,7 @@ export default function StatsPage() {
               </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {/* Daily */}
               <div className="bg-white rounded-2xl p-6 shadow-lg">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">📅 Today</h3>
@@ -1404,11 +1404,11 @@ export default function StatsPage() {
             </div>
 
             {/* Rep Count vs Date Line Graph */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg mt-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Trend Graph</h3>
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mt-6 sm:mt-8">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Trend Graph</h3>
               
               {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
                 {/* Exercise Selector */}
                 <div className="flex-1">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Exercise</label>
@@ -1430,46 +1430,46 @@ export default function StatsPage() {
                 <div className="flex-1">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Time Range</label>
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setGraphTimeRange('7days')}
-                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                        graphTimeRange === '7days'
-                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      7 Days
-                    </button>
-                    <button
-                      onClick={() => setGraphTimeRange('30days')}
-                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                        graphTimeRange === '30days'
-                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      30 Days
-                    </button>
-                    <button
-                      onClick={() => setGraphTimeRange('year')}
-                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                        graphTimeRange === 'year'
-                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      Past Year
-                    </button>
-                    <button
-                      onClick={() => setGraphTimeRange('overall')}
-                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                        graphTimeRange === 'overall'
-                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      Overall
-                    </button>
+                  <button
+                    onClick={() => setGraphTimeRange('7days')}
+                    className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all min-h-[44px] ${
+                      graphTimeRange === '7days'
+                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    7 Days
+                  </button>
+                  <button
+                    onClick={() => setGraphTimeRange('30days')}
+                    className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all min-h-[44px] ${
+                      graphTimeRange === '30days'
+                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    30 Days
+                  </button>
+                  <button
+                    onClick={() => setGraphTimeRange('year')}
+                    className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all min-h-[44px] ${
+                      graphTimeRange === 'year'
+                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Past Year
+                  </button>
+                  <button
+                    onClick={() => setGraphTimeRange('overall')}
+                    className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all min-h-[44px] ${
+                      graphTimeRange === 'overall'
+                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Overall
+                  </button>
                   </div>
                 </div>
               </div>
@@ -1480,7 +1480,9 @@ export default function StatsPage() {
                   <p>No data available for the selected filters.</p>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={400}>
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div className="min-w-[400px] sm:min-w-0">
+                    <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={graphData} margin={{ top: 5, right: 30, left: 20, bottom: 80 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis 
@@ -1519,6 +1521,8 @@ export default function StatsPage() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
+                  </div>
+                </div>
               )}
             </div>
             </div>

@@ -637,7 +637,7 @@ export default function GoalsPage() {
                 setActiveTab('active')
                 setShowAddForm(false)
               }}
-              className={`px-6 py-3 font-semibold transition-all relative ${
+              className={`px-4 sm:px-6 py-3 font-semibold transition-all relative min-h-[44px] ${
                 activeTab === 'active'
                   ? 'text-teal-600'
                   : 'text-gray-600 hover:text-teal-600'
@@ -653,7 +653,7 @@ export default function GoalsPage() {
                 setActiveTab('archived')
                 setShowAddForm(false)
               }}
-              className={`px-6 py-3 font-semibold transition-all relative ${
+              className={`px-4 sm:px-6 py-3 font-semibold transition-all relative min-h-[44px] ${
                 activeTab === 'archived'
                   ? 'text-teal-600'
                   : 'text-gray-600 hover:text-teal-600'
@@ -678,7 +678,7 @@ export default function GoalsPage() {
                     startDate: new Date().toISOString().split('T')[0],
                   })
                 }}
-                className="px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                className="px-4 sm:px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all min-h-[44px]"
               >
                 {showAddForm ? 'Cancel' : '+ Add Goal'}
               </button>
@@ -687,8 +687,8 @@ export default function GoalsPage() {
         </div>
 
         {showAddForm && activeTab === 'active' && (
-          <div className="bg-white rounded-2xl p-6 mb-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 mb-8 shadow-lg">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
               {editingGoal ? 'Edit Goal' : 'Create New Goal'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -751,7 +751,7 @@ export default function GoalsPage() {
               <button
                 type="submit"
                 disabled={editingGoal ? !hasGoalChanged : false}
-                className={`w-full px-6 py-3 rounded-lg font-semibold transition-all ${
+                className={`w-full px-4 sm:px-6 py-3 rounded-lg font-semibold transition-all min-h-[44px] ${
                   editingGoal && !hasGoalChanged
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:shadow-lg hover:-translate-y-0.5'
@@ -795,7 +795,7 @@ export default function GoalsPage() {
               return (
                 <div 
                   key={goal.id} 
-                  className="bg-white rounded-2xl p-6 shadow-lg cursor-pointer hover:shadow-xl transition-all"
+                  className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg cursor-pointer hover:shadow-xl transition-all"
                   onClick={() => setSelectedGoal(goal)}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
@@ -832,24 +832,24 @@ export default function GoalsPage() {
                         </p>
                       )}
                     </div>
-                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                       {!goal.archived && (
                         <button
                           onClick={() => handleEdit(goal)}
-                          className="px-4 py-2 text-sm font-semibold text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors"
+                          className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors min-h-[44px]"
                         >
                           Edit
                         </button>
                       )}
                       <button
                         onClick={() => handleArchive(goal.id, !goal.archived)}
-                        className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors min-h-[44px]"
                       >
                         {goal.archived ? 'Unarchive' : 'Archive'}
                       </button>
                       <button
                         onClick={() => handleDelete(goal.id)}
-                        className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors min-h-[44px]"
                       >
                         Delete
                       </button>
@@ -914,27 +914,27 @@ export default function GoalsPage() {
             onClick={() => setSelectedGoal(null)}
           >
             <div 
-              className="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+              className="bg-white rounded-2xl p-4 sm:p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
+              <div className="flex justify-between items-center mb-4 gap-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
                   {getExerciseIconPath(selectedGoal.exerciseType) ? (
                     <Image 
                       src={getExerciseIconPath(selectedGoal.exerciseType)!} 
                       alt={`${selectedGoal.exerciseType} icon`} 
                       width={28} 
                       height={28}
-                      className="w-7 h-7"
+                      className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0"
                     />
                   ) : null}
-                  <h2 className="text-2xl font-bold text-gray-800">
+                  <h2 className="text-lg sm:text-2xl font-bold text-gray-800 truncate">
                     {selectedGoal.exerciseType.charAt(0).toUpperCase() + selectedGoal.exerciseType.slice(1)} Goal History
                   </h2>
                 </div>
                 <button
                   onClick={() => setSelectedGoal(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
                 >
                   ×
                 </button>
@@ -997,11 +997,13 @@ export default function GoalsPage() {
                   <div className="space-y-6">
                     {/* Goal Progress Graph */}
                     {showGraph && (
-                      <div className="bg-gray-50 rounded-xl p-4">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">
+                      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 mb-6">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
                           {selectedGoal.period === 'day' ? 'Daily' : selectedGoal.period === 'week' ? 'Weekly' : 'Monthly'} Progress vs Goal
                         </h3>
-                        <ResponsiveContainer width="100%" height={300}>
+                        <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                          <div className="min-w-[400px] sm:min-w-0">
+                            <ResponsiveContainer width="100%" height={300}>
                           <BarChart data={goalGraphData} margin={{ top: 5, right: 30, left: 20, bottom: 80 }} barCategoryGap="20%">
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                             <XAxis 
@@ -1083,37 +1085,43 @@ export default function GoalsPage() {
                             />
                           </BarChart>
                         </ResponsiveContainer>
+                          </div>
+                        </div>
                       </div>
                     )}
 
                     {/* Period History Table */}
                     <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-gray-800 mb-2">Period History</h3>
-                      <div className="grid grid-cols-4 gap-2 font-semibold text-sm text-gray-700 pb-2 border-b">
-                        <div>Period</div>
-                        <div className="text-center">Status</div>
-                        <div className="text-center">Reps</div>
-                        <div className="text-center">Target</div>
-                      </div>
-                      {history.map((entry, index) => (
-                        <div 
-                          key={index} 
-                          className={`grid grid-cols-4 gap-2 text-sm py-2 rounded ${
-                            entry.completed ? 'bg-green-50' : 'bg-gray-50'
-                          }`}
-                        >
-                          <div className="font-medium">{entry.period}</div>
-                          <div className="text-center">
-                            {entry.completed ? (
-                              <span className="text-green-600 font-semibold">✓ Completed</span>
-                            ) : (
-                              <span className="text-gray-500">Not met</span>
-                            )}
+                      <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2">Period History</h3>
+                      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                        <div className="min-w-[400px] sm:min-w-0">
+                          <div className="grid grid-cols-4 gap-2 font-semibold text-xs sm:text-sm text-gray-700 pb-2 border-b">
+                            <div>Period</div>
+                            <div className="text-center">Status</div>
+                            <div className="text-center">Reps</div>
+                            <div className="text-center">Target</div>
                           </div>
-                          <div className="text-center font-semibold">{entry.count.toLocaleString()}</div>
-                          <div className="text-center text-gray-600">{entry.target.toLocaleString()}</div>
+                          {history.map((entry, index) => (
+                            <div 
+                              key={index} 
+                              className={`grid grid-cols-4 gap-2 text-xs sm:text-sm py-2 rounded ${
+                                entry.completed ? 'bg-green-50' : 'bg-gray-50'
+                              }`}
+                            >
+                              <div className="font-medium truncate">{entry.period}</div>
+                              <div className="text-center">
+                                {entry.completed ? (
+                                  <span className="text-green-600 font-semibold">✓</span>
+                                ) : (
+                                  <span className="text-gray-500">—</span>
+                                )}
+                              </div>
+                              <div className="text-center font-semibold">{entry.count.toLocaleString()}</div>
+                              <div className="text-center text-gray-600">{entry.target.toLocaleString()}</div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 )

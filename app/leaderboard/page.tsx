@@ -48,23 +48,23 @@ function LeaderboardContent() {
   }, [period, exerciseType])
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-8 px-4">
+    <div className="min-h-[calc(100vh-4rem)] py-6 sm:py-8 px-4 overflow-x-hidden">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2 text-center">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2 text-center">
             🏆 Leaderboard
           </h1>
-          <p className="text-gray-600 text-center mb-6 sm:mb-8 text-sm sm:text-base">
+          <p className="text-gray-600 text-center mb-4 sm:mb-6 lg:mb-8 text-xs sm:text-sm lg:text-base">
             Most {exerciseType.charAt(0).toUpperCase() + exerciseType.slice(1)} completed
           </p>
 
           {/* Exercise type selector */}
-          <div className="flex justify-center gap-4 mb-6">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
             {exerciseTypes.map((type) => (
               <button
                 key={type}
                 onClick={() => setExerciseType(type)}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all min-h-[44px] ${
                   exerciseType === type
                     ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -76,10 +76,10 @@ function LeaderboardContent() {
           </div>
 
           {/* Period selector */}
-          <div className="flex justify-center gap-4 mb-8">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
             <button
               onClick={() => setPeriod('today')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+              className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all min-h-[44px] ${
                 period === 'today'
                   ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -89,7 +89,7 @@ function LeaderboardContent() {
             </button>
             <button
               onClick={() => setPeriod('7days')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+              className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all min-h-[44px] ${
                 period === '7days'
                   ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -99,7 +99,7 @@ function LeaderboardContent() {
             </button>
             <button
               onClick={() => setPeriod('30days')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+              className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all min-h-[44px] ${
                 period === '30days'
                   ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -109,7 +109,7 @@ function LeaderboardContent() {
             </button>
             <button
               onClick={() => setPeriod('overall')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+              className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all min-h-[44px] ${
                 period === 'overall'
                   ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -134,11 +134,11 @@ function LeaderboardContent() {
               <p className="text-gray-600">No entries yet. Be the first to complete a workout!</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {leaderboard.map((entry, index) => (
                 <div
                   key={index}
-                  className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+                  className={`flex items-center justify-between p-3 sm:p-4 rounded-lg transition-all ${
                     index === 0
                       ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-300'
                       : index === 1
@@ -148,9 +148,9 @@ function LeaderboardContent() {
                       : 'bg-gray-50 border border-gray-200'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-base sm:text-lg flex-shrink-0 ${
                         index === 0
                           ? 'bg-yellow-400 text-yellow-900'
                           : index === 1
@@ -162,23 +162,23 @@ function LeaderboardContent() {
                     >
                       {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
                     </div>
-                    <div>
-                      <p className="font-semibold text-gray-800 text-lg">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-gray-800 text-sm sm:text-base lg:text-lg truncate">
                         {entry.profileName}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-teal-600">{entry.totalCount}</p>
-                    <p className="text-xs text-gray-500">{exerciseType}</p>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <p className="text-xl sm:text-2xl font-bold text-teal-600">{entry.totalCount.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 hidden sm:block">{exerciseType}</p>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-500 text-center px-2">
               Only users with profile names are shown on the leaderboard. Set your profile name in{' '}
               <a href="/account" className="text-teal-600 hover:underline font-semibold">
                 Account Settings

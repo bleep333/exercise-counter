@@ -20,11 +20,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="overflow-x-hidden">
+      <body className="overflow-x-hidden">
         <SessionProvider>
           <NavBar />
-          {children}
+          <div className="overflow-x-hidden">
+            {children}
+          </div>
         </SessionProvider>
       </body>
     </html>
