@@ -77,7 +77,7 @@ export default function SignUpPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={loading}
+              disabled={true}
               className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
@@ -92,7 +92,7 @@ export default function SignUpPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading}
+              disabled={true}
               className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
@@ -108,7 +108,7 @@ export default function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              disabled={loading}
+              disabled={true}
               className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
@@ -123,7 +123,7 @@ export default function SignUpPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              disabled={loading}
+              disabled={true}
               className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </div>
@@ -131,14 +131,14 @@ export default function SignUpPage() {
           <button 
             type="submit" 
             className="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 mt-2"
-            disabled={loading}
+            disabled={true}
           >
-            {loading ? 'Creating account...' : 'Sign Up'}
+            Sign Up
           </button>
         </form>
 
         <p className="text-center mt-6 sm:mt-8 text-gray-600 text-sm sm:text-base">
-          Already have an account?{' '}
+          Sign up disabled.{' '}
           <Link href="/auth/signin" className="text-teal-600 font-semibold hover:underline">
             Sign in
           </Link>

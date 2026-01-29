@@ -1,24 +1,16 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 function SignInForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email] = useState('user@counter.com')
+  const [password] = useState('user123')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const emailParam = searchParams.get('email')
-    if (emailParam) {
-      setEmail(emailParam)
-    }
-  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,8 +62,7 @@ function SignInForm() {
               id="email"
               type="email"
               value={email}
-              placeholder="user@counter.com"
-              onChange={(e) => setEmail(e.target.value)}
+              readOnly
               required
               disabled={loading}
               className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
@@ -86,8 +77,7 @@ function SignInForm() {
               id="password"
               type="password"
               value={password}
-              placeholder="user123"
-              onChange={(e) => setPassword(e.target.value)}
+              readOnly
               required
               disabled={loading}
               className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-teal-600 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
