@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Script to create .env file with placeholders
+# Script to create .env file with safe defaults
 
 echo "Creating .env file..."
 
-cat > .env << 'EOF'
+NEXTAUTH_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")
+
+cat > .env << EOF
 # Database Configuration
 # Replace the placeholders with your actual PostgreSQL credentials
 # Format: postgresql://username:password@host:port/database_name?schema=public
@@ -15,9 +17,9 @@ DATABASE_URL="postgresql://postgres:YOUR_PASSWORD_HERE@localhost:5432/exercise_c
 NEXTAUTH_URL="http://localhost:3000"
 
 # NextAuth Secret
-# This is a randomly generated secret - you can regenerate with: openssl rand -base64 32
-# IMPORTANT: Generate a new secret for production!
-NEXTAUTH_SECRET="REMOVED="
+# Auto-generated for you. Regenerate anytime with:
+#   openssl rand -base64 32
+NEXTAUTH_SECRET="$NEXTAUTH_SECRET"
 EOF
 
 echo ".env file created successfully!"
